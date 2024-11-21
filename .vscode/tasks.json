@@ -10,7 +10,7 @@
           "${workspaceFolder}/main.cpp",
           "${workspaceFolder}/game.cpp",
           "-o",
-          "${workspaceFolder}/test.exe",
+          "${workspaceFolder}/app.exe",
           "-I",
           "C:/SFML/include",
           "-L",
