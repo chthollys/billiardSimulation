@@ -1,4 +1,4 @@
-# Billiard Simulation with SFML
+# Billiard Simulation with SFML fufufafa
 
 This project is a 2D billiards simulation game built using C++ and the Simple and Fast Multimedia Library (SFML). It demonstrates physics-based interactions between balls, including collisions, friction, and restitution, along with cue stick control and table boundaries.
 
