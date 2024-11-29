@@ -26,7 +26,7 @@ struct SizeRef {
     sf::Vector2f table_offset = sf::Vector2f(table_offsetX, table_offsetY);
 
 
-    const float table_topBottomWall_width = table_width;
+    const float table_topBottomWall_width = table_width + 120.0f;
     const float table_topBottomWall_height = 60.0f;
     const float table_topBottomWallShadow_width = table_topBottomWall_width;
     const float table_topBottomWallShadow_height = table_topBottomWall_height;
