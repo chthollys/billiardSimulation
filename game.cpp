@@ -204,6 +204,16 @@ sf::Vector2f Ball::getVelocity() const {
     return velocity;
 }
 
+// Setter Functions
+
+void Ball::setPosition(sf::Vector2f position) {
+    this->shape.setPosition(position);
+}
+
+void Ball::setVelocity (sf::Vector2f velocity) {
+    this->velocity = velocity;
+}
+
 /* === CueStick Class Definition STARTS HERE === */
 
 CueStick::CueStick() : power(0.0f) {
@@ -296,7 +306,7 @@ void Hole::draw(sf::RenderWindow& window) {
 bool Hole::isBallInHole(const sf::Vector2f& ballPosition, float ballRadius) const {
     float distance = std::sqrt(std::pow(getPosition().x - ballPosition.x, 2) +
                                std::pow(getPosition().y - ballPosition.y, 2));
-    return distance <= (hole_radius + ballRadius); // Ball is in hole if it overlaps with the hole radius
+    return distance <= ((hole_radius + ballRadius) * 0.7); // Ball is in hole if it overlaps with the hole radius
 }
 
 sf::Vector2f Hole::getPosition() const {
@@ -599,18 +609,19 @@ void Game::pollEvents() {
     }   
 }
 void Game::update() {
-
     this->pollEvents();
 
     if (cueStick.isDrag()) {
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
         cueStick.update(mousePosition);
     }
+
     // Update each ball's position based on its velocity
     for (Ball* ball : balls) {
         ball->update();
     }
 
+    // Check for collisions between balls and resolve them
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {
             if (balls[i]->checkCollision(*balls[j])) {
@@ -618,7 +629,30 @@ void Game::update() {
             }
         }
     }
+
+    // Check if balls fall into holes
+    for (Hole* hole : holes) {
+        for (auto it = balls.begin(); it != balls.end();) {
+            if (hole->isBallInHole((*it)->getPosition(), ball_radius)) {
+                if (*it == cueBall) {
+                    // Cue ball fell into the hole: respawn it
+                    std::cout << "Cue ball fell into the hole! Respawning..." << std::endl;
+                    cueBall->setVelocity({0, 0});  // Reset its velocity
+                    cueBall->setPosition(ballPositions[ballCount - 1]);  // Respawn to initial position
+                    ++it; // Move to the next ball
+                } else {
+                    // Other balls fell into the hole: remove them
+                    std::cout << "Ball fell into the hole!" << std::endl;
+                    delete *it;              // Free memory
+                    it = balls.erase(it);    // Remove ball from vector
+                }
+            } else {
+                ++it;
+            }
+        }
+    }
 }
+
 void Game::render() {
 
     /*

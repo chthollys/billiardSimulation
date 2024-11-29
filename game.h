@@ -160,7 +160,10 @@ public:
     // Getter Functions
     sf::Vector2f getPosition() const;
     sf::Vector2f getVelocity() const;
-    
+
+    // Setter Functions
+    void setPosition(sf::Vector2f position);
+    void setVelocity(sf::Vector2f velocity);
 };
 
 
