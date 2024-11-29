@@ -67,17 +67,23 @@ std::vector<sf::Vector2f> References::generateBallsPositions(int ballcount, floa
 std::vector<sf::Vector2f> References::generateHolesPositions(int holeCount, float holeRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset) {
     std::vector<sf::Vector2f> array;
     std::vector<sf::Vector2f> positions = {
-        table_offset, // Hole TopLeft
-        sf::Vector2f(table_offsetX, table_offsetY + table_height),          // Hole BottomLeft
-        sf::Vector2f(window_width / 2, (window_height - table_height) / 2), // Hole TopMid
-        sf::Vector2f(window_width / 2, (window_height + table_height) / 2), // Hole BottomMid
-        sf::Vector2f((window_width + table_width) / 2, table_offsetY),      // Hole TopRight
-        sf::Vector2f((window_width + table_width) / 2, (table_offsetY + table_height))      // Hole BottomRight
+        hole_topLeft,       // Hole TopLeft
+        hole_bottomLeft,    // Hole BottomLeft
+        hole_topMid,        // Hole TopMid
+        hole_bottomMid,     // Hole BottomMid
+        hole_topRight,      // Hole TopRight
+        hole_bottomRight    // Hole BottomRight
     };
+    
     std::cout << "Generating positions for " << holeCount << " holes." << std::endl;
 
+    for(int i = 0; i < positions.size(); i++) {
+        array.push_back(positions[i]);
+        std::cout << "Generated positions for " << " hole-" << i + 1 << std::endl;
+    }
     
-    std::cout << "Position generation complete." << std::endl;
+    std::cout << "Generated positions for " << holeCount << " holes." << std::endl;
+
     return array;
 }
 
@@ -299,12 +305,6 @@ sf::Vector2f Hole::getPosition() const {
 
 /* === Table Class Definitions === */
 
-void Table::initHoles() {
-    for (int i = 0; i< holeCount; i++){
-
-    }
-}
-
 // Constructor
 
 Table::Table() {
@@ -371,7 +371,6 @@ Table::Table() {
     bottomRightCorner.setPosition(bottomRightCornerPosition);
     bottomRightCorner.setFillColor(tableWallColor);
 
-    this->initHoles();
 }
 
 // Functions
@@ -490,6 +489,22 @@ void Game::initBalls() {
     std::cout << "Balls initialized" << std::endl;
 }
 
+void Game::initHoles() {
+    std::vector<sf::Vector2f> holesPosition = generateHolesPositions(holeCount, hole_radius, table_dimension, table_offset);
+
+    if (holesPosition.size() < holeCount) {
+        std::cout << "Error: ballColors has fewer elements than expected." << std::endl;
+        return; // Exit to prevent invalid access
+    }
+
+    for (int i = 0; i < holesPosition.size(); i++){
+        std::cout << "Initializing hole " << i << std::endl;
+        Hole* newHole = new Hole(holesPosition[i]);
+        holes.push_back(newHole);
+        std::cout << "Hole " << i << " initialized at position (" << holesPosition[i].x << ", " << holesPosition[i].y << ")" << std::endl;
+    }
+}
+
 void Game::resetBalls() {
     // Delete existing balls
     for (Ball* ball : balls) {
@@ -524,6 +539,9 @@ Game::Game() {
     this->initBalls();
     std::cout << "Balls initialized." << std::endl;
 
+    this->initHoles();
+    std::cout << "Holes initialized." << std::endl;
+
     std::cout << "Game created successfully." << std::endl;
 }
 
@@ -534,7 +552,10 @@ Game::~Game() {
         delete ball;
         ball = nullptr; // Extra safe step for memory leaks case
     }
-    std::cout << "Game resources cleaned up." << std::endl;
+    for(auto& hole : holes) {
+        delete hole;
+        hole = nullptr;
+    }
 }
 
 // Getter Functions
@@ -610,7 +631,11 @@ void Game::render() {
 
     // Draw Game Objects
     table.draw(*this->window);
-    
+
+    for(Hole* hole : holes) {
+        hole->draw(*this->window);
+    }
+
     for(Ball* ball : balls) {
         ball->draw(*this->window); // Dereference usage for getting the correct argument type
     }

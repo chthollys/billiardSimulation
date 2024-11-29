@@ -118,6 +118,14 @@ struct SizePositionRef : public SizeRef {
     const sf::Vector2f topRightCornerPosition = sf::Vector2f(table_topWall.x + table_width + cornerRadius, table_topWall.y - cornerRadius);
     const sf::Vector2f bottomLeftCornerPosition = sf::Vector2f(table_topWall.x - table_width - cornerRadius, table_bottomWall.y + cornerRadius);
     const sf::Vector2f bottomRightCornerPosition = sf::Vector2f(table_topWall.x + table_width + cornerRadius, table_bottomWall.y + cornerRadius);
+
+    const sf::Vector2f hole_topLeft = table_offset;
+    const sf::Vector2f hole_bottomLeft = sf::Vector2f(table_offsetX, table_offsetY + table_height);
+    const sf::Vector2f hole_topMid = sf::Vector2f(window_width / 2, (window_height - table_height - table_topBottomWall_height * 0.5) / 2);
+    const sf::Vector2f hole_bottomMid = sf::Vector2f(window_width / 2, (window_height + table_height + table_topBottomWall_height * 0.5) / 2);
+    const sf::Vector2f hole_topRight = sf::Vector2f((window_width + table_width) / 2, table_offsetY);
+    const sf::Vector2f hole_bottomRight = sf::Vector2f((window_width + table_width) / 2, (table_offsetY + table_height));
+
 };
 
 /* ------ Use This Struct Inheritance to Hold All Size, Position, and Color References ------ */
@@ -127,7 +135,7 @@ struct References : public SizePositionRef, public ColorRef {
     std::vector<float> generateBallsPositionY (int ballCount, float ballRadius, sf::Vector2f playGroundDimension);
     std::vector<sf::Vector2f> generateBallsPositions(int ballcount, float ballRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset);
     void displayPosition(std::string log, sf::Vector2f position);
-    std::vector<float> generateHolesPositions (int holeCount, float holeRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset);
+    std::vector<sf::Vector2f> generateHolesPositions (int holeCount, float holeRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset);
 }; 
 
 /* ------------------------------------------------------------------------------------------ */
@@ -195,8 +203,6 @@ class Table : private References {
         sf::RectangleShape topWall, bottomWall, leftWall, rightWall;
         sf::RectangleShape topWallShadow, bottomWallShadow, leftWallShadow, rightWallShadow;
         sf::CircleShape topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner;
-        std::vector<Hole> holes;
-        void initHoles();
 
     public:
         // Constructor
@@ -226,12 +232,15 @@ private:
     CueStick cueStick;
     Table table;
     std::vector<sf::Vector2f> ballPositions;
-    
+    Hole* hole;
+    std::vector<Hole*> holes;
+   
 
     // Private Functions
     void initVariables();
     void initWindow();
     void initBalls();
+    void initHoles();
     void resetBalls();
     bool areBallsMoving() const;
 
