@@ -257,6 +257,29 @@ sf::Vector2f CueStick::getDirection(const sf::Vector2f& cueBallPosition) const {
 }
 
 
+/* === Hole Class Definitions === */
+
+Hole::Hole(sf::Vector2f position) {
+    shape.setRadius(hole_radius);
+    shape.setOrigin(hole_radius, hole_radius);
+    shape.setPosition(position);
+    shape.setFillColor(holeColor); // Default hole color
+}
+
+void Hole::draw(sf::RenderWindow& window) {
+    window.draw(shape);
+}
+
+bool Hole::isBallInHole(const sf::Vector2f& ballPosition, float ballRadius) const {
+    float distance = std::sqrt(std::pow(getPosition().x - ballPosition.x, 2) +
+                               std::pow(getPosition().y - ballPosition.y, 2));
+    return distance <= (hole_radius + ballRadius); // Ball is in hole if it overlaps with the hole radius
+}
+
+sf::Vector2f Hole::getPosition() const {
+    return shape.getPosition();
+}
+
 /* === Table Class Definitions === */
 
 // Constructor

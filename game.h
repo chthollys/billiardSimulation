@@ -26,7 +26,7 @@ struct SizeRef {
     sf::Vector2f table_offset = sf::Vector2f(table_offsetX, table_offsetY);
 
 
-    const float table_topBottomWall_width = table_width + 120.0f;
+    const float table_topBottomWall_width = table_width + 120.0f; // added 120.0f corresponding to the 2 times height
     const float table_topBottomWall_height = 60.0f;
     const float table_topBottomWallShadow_width = table_topBottomWall_width;
     const float table_topBottomWallShadow_height = table_topBottomWall_height;
@@ -39,6 +39,8 @@ struct SizeRef {
     const float cornerRadius = 60.0f;
     const float shadowOffset = 15.0f;
 
+    // Hole Properties
+    const float hole_radius = 50.0f;
 
     // Ball Properties
     const int ballCount = 16;
@@ -85,6 +87,9 @@ struct ColorRef {
     sf::Color tableColor = sf::Color(0, 204, 0); // Bright green
     sf::Color tableWallColor= sf::Color(139, 69, 19); // Dark wood color
     sf::Color tableShadowColor = sf::Color(105, 58, 26);
+
+    // Hole Color Properties
+    sf::Color holeColor = sf::Color(0, 0, 0);
 };
 
 struct SizePositionRef : public SizeRef {
@@ -170,17 +175,15 @@ public:
     sf::Vector2f getDirection(const sf::Vector2f& cueBallPosition) const;
 };
 
-// class Hole : private References {
-// private:
-//     sf::CircleShape shape;
-//     float radius;
-//     sf::Vector2f position;
+class Hole : private References {
+private:
+    sf::CircleShape shape;
 
-// public:
-//     Hole(float r, sf::Vector2f pos);
-//     void draw(sf::RenderWindow& window);
-//     bool isBallInHole(const sf::Vector2f& ballPosition, float ballRadius) const;
-// };
+public:
+    Hole(sf::Vector2f position);
+    void draw(sf::RenderWindow& window);
+    bool isBallInHole(const sf::Vector2f& ballPosition, float ballRadius) const;
+};
 
 class Table : private References {
     private:
