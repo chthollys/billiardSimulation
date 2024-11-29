@@ -40,6 +40,7 @@ struct SizeRef {
     const float shadowOffset = 15.0f;
 
     // Hole Properties
+    const int holeCount = 6;
     const float hole_radius = 50.0f;
 
     // Ball Properties
@@ -124,8 +125,9 @@ struct SizePositionRef : public SizeRef {
 struct References : public SizePositionRef, public ColorRef {
     std::vector<float> generateBallsPositionX (int ballCount, float ballRadius, sf::Vector2f playGroundDimension);
     std::vector<float> generateBallsPositionY (int ballCount, float ballRadius, sf::Vector2f playGroundDimension);
-    std::vector<sf::Vector2f> generate(int ballcount, float ballRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset);
+    std::vector<sf::Vector2f> generateBallsPositions(int ballcount, float ballRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset);
     void displayPosition(std::string log, sf::Vector2f position);
+    std::vector<float> generateHolesPositions (int holeCount, float holeRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset);
 }; 
 
 /* ------------------------------------------------------------------------------------------ */
@@ -194,6 +196,7 @@ class Table : private References {
         sf::RectangleShape topWallShadow, bottomWallShadow, leftWallShadow, rightWallShadow;
         sf::CircleShape topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner;
         std::vector<Hole> holes;
+        void initHoles();
 
     public:
         // Constructor
@@ -224,7 +227,6 @@ private:
     Table table;
     std::vector<sf::Vector2f> ballPositions;
     
-
 
     // Private Functions
     void initVariables();

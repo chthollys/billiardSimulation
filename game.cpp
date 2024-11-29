@@ -44,7 +44,7 @@ std::vector<float> References::generateBallsPositionY (int ballCount, float ball
     return array;
 }
 
-std::vector<sf::Vector2f> References::generate(int ballcount, float ballRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset) {
+std::vector<sf::Vector2f> References::generateBallsPositions(int ballcount, float ballRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset) {
     std::vector<sf::Vector2f> array;
     std::cout << "Generating positions for " << ballCount << " balls." << std::endl;
 
@@ -60,6 +60,23 @@ std::vector<sf::Vector2f> References::generate(int ballcount, float ballRadius, 
             array.push_back(sf::Vector2f(arrayX[i] + offset.x, arrayY[i] + offset.y));
         }
     }
+    std::cout << "Position generation complete." << std::endl;
+    return array;
+}
+
+std::vector<sf::Vector2f> References::generateHolesPositions(int holeCount, float holeRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset) {
+    std::vector<sf::Vector2f> array;
+    std::vector<sf::Vector2f> positions = {
+        table_offset, // Hole TopLeft
+        sf::Vector2f(table_offsetX, table_offsetY + table_height),          // Hole BottomLeft
+        sf::Vector2f(window_width / 2, (window_height - table_height) / 2), // Hole TopMid
+        sf::Vector2f(window_width / 2, (window_height + table_height) / 2), // Hole BottomMid
+        sf::Vector2f((window_width + table_width) / 2, table_offsetY),      // Hole TopRight
+        sf::Vector2f((window_width + table_width) / 2, (table_offsetY + table_height))      // Hole BottomRight
+    };
+    std::cout << "Generating positions for " << holeCount << " holes." << std::endl;
+
+    
     std::cout << "Position generation complete." << std::endl;
     return array;
 }
@@ -283,14 +300,9 @@ sf::Vector2f Hole::getPosition() const {
 /* === Table Class Definitions === */
 
 void Table::initHoles() {
-    holes.emplace_back(topLeftCornerPosition);
-    holes.emplace_back(topRightCornerPosition);
-    holes.emplace_back(bottomLeftCornerPosition);
-    holes.emplace_back(bottomRightCornerPosition);
+    for (int i = 0; i< holeCount; i++){
 
-    // Middle holes (for sides)
-    holes.emplace_back(sf::Vector2f(table_leftWall.x, table_topWall.y + table_height / 2));
-    holes.emplace_back(sf::Vector2f(table_rightWall.x, table_topWall.y + table_height / 2));
+    }
 }
 
 // Constructor
@@ -443,7 +455,7 @@ void Game::initWindow() {
 
 void Game::initBalls() {
     std::cout << "Starting ball initialization..." << std::endl;
-    ballPositions = generate(ballCount, ball_radius, table_dimension, table_offset);
+    ballPositions = generateBallsPositions(ballCount, ball_radius, table_dimension, table_offset);
 
     // std::cout << "Ball positions generated." << std::endl;
 
