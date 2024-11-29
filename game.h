@@ -183,6 +183,8 @@ public:
     Hole(sf::Vector2f position);
     void draw(sf::RenderWindow& window);
     bool isBallInHole(const sf::Vector2f& ballPosition, float ballRadius) const;
+    // Getter Functions
+    sf::Vector2f getPosition() const;
 };
 
 class Table : private References {
@@ -191,6 +193,7 @@ class Table : private References {
         sf::RectangleShape topWall, bottomWall, leftWall, rightWall;
         sf::RectangleShape topWallShadow, bottomWallShadow, leftWallShadow, rightWallShadow;
         sf::CircleShape topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner;
+        std::vector<Hole> holes;
 
     public:
         // Constructor
@@ -220,6 +223,7 @@ private:
     CueStick cueStick;
     Table table;
     std::vector<sf::Vector2f> ballPositions;
+    
 
 
     // Private Functions

@@ -282,6 +282,17 @@ sf::Vector2f Hole::getPosition() const {
 
 /* === Table Class Definitions === */
 
+void Table::initHoles() {
+    holes.emplace_back(topLeftCornerPosition);
+    holes.emplace_back(topRightCornerPosition);
+    holes.emplace_back(bottomLeftCornerPosition);
+    holes.emplace_back(bottomRightCornerPosition);
+
+    // Middle holes (for sides)
+    holes.emplace_back(sf::Vector2f(table_leftWall.x, table_topWall.y + table_height / 2));
+    holes.emplace_back(sf::Vector2f(table_rightWall.x, table_topWall.y + table_height / 2));
+}
+
 // Constructor
 
 Table::Table() {
@@ -347,6 +358,8 @@ Table::Table() {
     bottomRightCorner.setOrigin(cornerRadius, cornerRadius);
     bottomRightCorner.setPosition(bottomRightCornerPosition);
     bottomRightCorner.setFillColor(tableWallColor);
+
+    this->initHoles();
 }
 
 // Functions
