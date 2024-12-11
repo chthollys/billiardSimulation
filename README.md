@@ -74,3 +74,4 @@ To compile the project, use the following command, adjusting the paths to SFML l
 
 ```bash
 g++ main.cpp game.cpp -o app -I"path_to_sfml/include" -L"path_to_sfml/lib" -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+g++ main.cpp game.cpp -o app -I"C:\SFML-2.6.1\include" -L"C:\SFML-2.6.1\lib" -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio

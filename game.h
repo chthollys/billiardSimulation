@@ -156,6 +156,8 @@ public:
     bool checkCollision(const Ball& other) const;
     void resolveCollision(Ball& other);
     void update();
+    void setPosition(const sf::Vector2f& position);
+    void setVelocity(const sf::Vector2f& velocity);
 
     // Getter Functions
     sf::Vector2f getPosition() const;
@@ -234,6 +236,7 @@ private:
     std::vector<sf::Vector2f> ballPositions;
     Hole* hole;
     std::vector<Hole*> holes;
+    sf::Vector2f initialCueBallPosition;
    
 
     // Private Functions

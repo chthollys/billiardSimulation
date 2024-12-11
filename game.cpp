@@ -192,7 +192,9 @@ void Ball::update() {
     if (std::abs(velocity.y) < minVelocityThreshold) velocity.y = 0.0f;
 }
 
-
+void Ball::setPosition(const sf::Vector2f& position) {
+    shape.setPosition(position);
+}
 
 // Getter Functions
 
@@ -433,7 +435,7 @@ sf::Vector2f Table::getDimension() {
 // Private Functions
 void Game::initVariables() {
     this->window = nullptr;
-    std::cout << "variable initialized" << std::endl;
+    initialCueBallPosition = sf::Vector2f(0.f, 0.f); // Inisialisasi default
 }
 
 void Game::initWindow() {
@@ -475,7 +477,7 @@ void Game::initBalls() {
 
         if (i == ballCount - 1) { // Last ball as cue ball
             cueBall = newBall;
-            std::cout << "Cue ball initialized." << std::endl;
+            initialCueBallPosition = cueBall->getPosition();
         }
     }
     // for(int i = 0; i <= ballCount; ++i) {
@@ -598,23 +600,41 @@ void Game::pollEvents() {
         } 
     }   
 }
-void Game::update() {
 
+void Ball::setVelocity(const sf::Vector2f& velocity) {
+    this->velocity = velocity;
+}
+
+void Game::update() {
     this->pollEvents();
 
     if (cueStick.isDrag()) {
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
         cueStick.update(mousePosition);
     }
-    // Update each ball's position based on its velocity
-    for (Ball* ball : balls) {
-        ball->update();
-    }
+
+    for (Ball* ball : balls) ball->update();
 
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {
             if (balls[i]->checkCollision(*balls[j])) {
                 balls[i]->resolveCollision(*balls[j]);
+            }
+        }
+    }
+
+    for (size_t i = 0; i < balls.size(); ++i) {
+        for (Hole* hole : holes) {
+            if (hole->isBallInHole(balls[i]->getPosition(), ball_radius)) {
+                if (balls[i] == cueBall) {
+                    cueBall->setPosition(initialCueBallPosition);
+                    cueBall->setVelocity(sf::Vector2f(0.f, 0.f));
+                } else {
+                    delete balls[i];
+                    balls.erase(balls.begin() + i);
+                    --i;
+                    break;
+                }
             }
         }
     }
