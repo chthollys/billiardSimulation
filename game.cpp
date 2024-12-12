@@ -3,46 +3,41 @@
 
 /* === Ball Position Engine Definition STARTS HERE === */
 
-std::vector<float> References::generateBallsPositionX (int ballCount, float ballRadius, sf::Vector2f playGroundDimension) {
+std::vector<float> References::generateBallsPositionX(int ballCount, float ballRadius, sf::Vector2f playGroundDimension) {
     std::vector<float> array;
-    if(ballCount == 16) {
-        for(int i = 0; i <= 4; i++) {
-            for(int ii = 0; ii <= i; ii++) {
-                array.emplace_back((playGroundDimension.x * 3 / 4) - (playGroundDimension.x / 25) + 2 * i * ballRadius);
+
+    if (ballCount == 16) {
+        float baseX = playGroundDimension.x * 3 / 4;  // Base X position for the triangle
+        for (int i = 0; i < 5; ++i) {  // 5 rows
+            float rowOffset = 2 * ballRadius * i;  // Horizontal shift for each row
+            for (int j = 0; j <= i; ++j) {  // Number of balls in the row
+                array.emplace_back(baseX + rowOffset);
             }
         }
-        array.emplace_back(playGroundDimension.x / 4);
+        array.emplace_back(playGroundDimension.x / 4);  // Position for the cue ball
     }
+
     return array;
 }
 
-std::vector<float> References::generateBallsPositionY (int ballCount, float ballRadius, sf::Vector2f playGroundDimension) {
+
+std::vector<float> References::generateBallsPositionY(int ballCount, float ballRadius, sf::Vector2f playGroundDimension) {
     std::vector<float> array;
-    float middlePoint = playGroundDimension.y / 2;
+
     if (ballCount == 16) {
-        for (int i = 0; i <= 4; i++) {
-            int currentOrder = i + 1;
-            if (currentOrder == 1) { // First Order Ball
-                array.push_back(middlePoint);
-            }
-            else if (currentOrder % 2 == 0) { // Even Order Ball
-                for(int ii = 1; ii <= currentOrder / 2; ii++) {                
-                    array.push_back(middlePoint - ballRadius * ii);
-                    array.push_back(middlePoint + ballRadius * ii);
-                }
-            }
-            else { // Odd Order Ball
-                for(int ii = 1; ii <= (currentOrder - 1) / 2; ii++) {                
-                    array.push_back(middlePoint - 2 * ballRadius * ii);
-                    array.push_back(middlePoint + 2 * ballRadius * ii);
-                }
-                array.push_back(middlePoint);
+        float middleY = playGroundDimension.y / 2;  // Vertical center of the table
+        for (int i = 0; i < 5; ++i) {  // 5 rows
+            for (int j = 0; j <= i; ++j) {
+                float verticalOffset = (j - i / 2.0f) * 2 * ballRadius;  // Center the balls in the row
+                array.emplace_back(middleY + verticalOffset);
             }
         }
-        array.push_back(middlePoint);
+        array.emplace_back(middleY);  // Position for the cue ball
     }
+
     return array;
 }
+
 
 std::vector<sf::Vector2f> References::generateBallsPositions(int ballcount, float ballRadius, sf::Vector2f playGroundDimension, sf::Vector2f offset) {
     std::vector<sf::Vector2f> array;
@@ -101,8 +96,6 @@ Ball::Ball(sf::Vector2f position, sf::Color color) : velocity(0.f, 0.f) {
     shape.setPosition(position);
     shape.setFillColor(color);
     shape.setOrigin(ball_radius, ball_radius);
-    shape.setOutlineThickness(ball_border_width);
-    shape.setOutlineColor(ballBorderColor);
 }
 
 void Ball::draw(sf::RenderWindow& window) { // Pass by reference for better efficiency and maintain original updated state
@@ -210,8 +203,36 @@ void Ball::setPosition(sf::Vector2f position) {
     this->shape.setPosition(position);
 }
 
-void Ball::setVelocity (sf::Vector2f velocity) {
+void Ball::setVelocity(sf::Vector2f velocity) {
     this->velocity = velocity;
+}
+
+/* === SolidBall Class Definition STARTS HERE === */
+
+SolidBall::SolidBall(sf::Vector2f position, sf::Color color) : Ball(position, color) {
+    shape.setRadius(ball_radius);
+    shape.setPosition(position);
+    shape.setOrigin(ball_radius, ball_radius);
+    shape.setFillColor(color);
+}
+/* === StripedBall Class Definition STARTS HERE === */
+
+StripedBall::StripedBall(sf::Vector2f position, sf::Color color) : Ball(position, color) {
+    shape.setRadius(ball_radius - ball_border_width / 2);
+    shape.setPosition(position);
+    shape.setOrigin(ball_radius - ball_border_width / 2, ball_radius - ball_border_width / 2);
+    shape.setOutlineThickness(ball_border_width);
+    shape.setOutlineColor(ballBorderColor);
+    shape.setFillColor(color);
+}
+
+/* === BlackBall Class Definition STARTS HERE === */
+
+BlackBall::BlackBall(sf::Vector2f position, sf::Color color) : Ball(position, color) {
+    shape.setRadius(ball_radius);
+    shape.setPosition(position);
+    shape.setOrigin(ball_radius, ball_radius);
+    shape.setFillColor(color); // Typically black
 }
 
 /* === CueStick Class Definition STARTS HERE === */
@@ -466,8 +487,6 @@ void Game::initBalls() {
     std::cout << "Starting ball initialization..." << std::endl;
     ballPositions = generateBallsPositions(ballCount, ball_radius, table_dimension, table_offset);
 
-    // std::cout << "Ball positions generated." << std::endl;
-
     if (ballColors.size() < ballCount) {
         std::cout << "Error: ballColors has fewer elements than expected." << std::endl;
         return; // Exit to prevent invalid access
@@ -479,25 +498,37 @@ void Game::initBalls() {
 
     for (int i = 0; i < ballCount; ++i) {
         std::cout << "Initializing ball " << i << std::endl;
-        Ball* newBall = new Ball(ballPositions[i], ballColors[i]);
-        balls.push_back(newBall);
-        std::cout << "Ball " << i << " initialized at position (" << ballPositions[i].x << ", " << ballPositions[i].y << ")" << std::endl;
 
-        if (i == ballCount - 1) { // Last ball as cue ball
+        Ball* newBall;
+        if (i == ballCount - 1) {  // Last ball is the cue ball
+            newBall = new Ball(ballPositions[i], ballColors[i]);
             cueBall = newBall;
+
+            // Store the initial position for teleportation
+            initialCueBallPosition = ballPositions[i];
+
             std::cout << "Cue ball initialized." << std::endl;
+        } else if (i == 7) {  // The 8th ball is the BlackBall
+            newBall = new BlackBall(ballPositions[i], sf::Color::Black);
+            std::cout << "BlackBall initialized." << std::endl;
+        } else if (i % 2 == 0) {  // Even-indexed balls as SolidBall
+            newBall = new SolidBall(ballPositions[i], ballColors[i]);
+            std::cout << "SolidBall initialized." << std::endl;
+        } else {  // Odd-indexed balls as StripedBall
+            newBall = new StripedBall(ballPositions[i], ballColors[i]);
+            std::cout << "StripedBall initialized." << std::endl;
         }
+
+        balls.push_back(newBall);
+        std::cout << "Ball " << i << " initialized at position ("
+                  << ballPositions[i].x << ", " << ballPositions[i].y << ")" << std::endl;
     }
-    // for(int i = 0; i <= ballCount; ++i) {
-    //     std::cout << "Initializing ball " << i << std::endl;
-    //     this->ball = new Ball(ballPositions[i], ballColors[i]);
-    //     balls.push_back(ball);
-    //     if (i == 15) { // Last ball in list as cue ball
-    //         cueBall = ball;
-    //     }
-    // }
-    std::cout << "Balls initialized" << std::endl;
+
+    std::cout << "Balls initialized." << std::endl;
 }
+
+
+
 
 void Game::initHoles() {
     std::vector<sf::Vector2f> holesPosition = generateHolesPositions(holeCount, hole_radius, table_dimension, table_offset);
@@ -578,50 +609,84 @@ const bool Game::running() const {
 
 // Functions
 void Game::pollEvents() {
-    while(this->window->pollEvent(this->ev)) {
-
-        switch(this->ev.type) {
-            
-        case sf::Event::Closed:
-            std::cout << "Close event received." << std::endl;
-            this->window->close();
-            break;
-        case sf::Event::MouseButtonPressed:
-                if (ev.mouseButton.button == sf::Mouse::Left && !areBallsMoving()) {
-                    cueStick.startDragging(cueBall->getPosition());
-                }
-                // std::cout << "(" << table.getPosition().x << ", " << table.getPosition().y << ")" << std::endl;
+    while (this->window->pollEvent(this->ev)) {
+        switch (this->ev.type) {
+            case sf::Event::Closed:
+                this->window->close();
                 break;
-        case sf::Event::MouseButtonReleased:
-            if (ev.mouseButton.button == sf::Mouse::Left) {
-                sf::Vector2f direction = cueStick.getDirection(cueBall->getPosition());
-                float power = cueStick.getPower();
-                // std::cout << "Power : " <<power << std::endl;
-                // std::cout << "Direction : " << direction.x << ", " << direction.y << std::endl;
-                cueBall->applyForce(direction * power); // Apply force to cue ball
-                cueStick.stopDragging();
-            }
-            break;
-        default:
-            // std::cout << "Other event received: " << this->ev.type << std::endl;
-            break;
-        } 
-    }   
+
+            case sf::Event::MouseButtonPressed:
+                if (ev.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
+                    float dx = mousePosition.x - cueBall->getPosition().x;
+                    float dy = mousePosition.y - cueBall->getPosition().y;
+                    float distanceSquared = dx * dx + dy * dy;
+
+                    if (distanceSquared <= ball_radius * ball_radius) {
+                        // Mouse clicked inside the cue ball
+                        if (isCueBallDraggable) {
+                            std::cout << "Dragging the cue ball..." << std::endl;
+                        }
+                    } else {
+                        // Mouse clicked outside the cue ball
+                        if (isCueBallDraggable) {
+                            isCueBallDraggable = false; // Disable dragging
+                        }
+
+                        if (!areBallsMoving()) {
+                            // Start dragging the cue stick
+                            cueStick.startDragging(cueBall->getPosition());
+                        }
+                    }
+                }
+                break;
+
+            case sf::Event::MouseButtonReleased:
+                if (ev.mouseButton.button == sf::Mouse::Left) {
+                    if (!isCueBallDraggable) {
+                        // Apply force to the cue ball when the cue stick is released
+                        sf::Vector2f direction = cueStick.getDirection(cueBall->getPosition());
+                        float power = cueStick.getPower();
+                        cueBall->applyForce(direction * power);
+                        cueStick.stopDragging();
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
 }
+
+
+
 void Game::update() {
     this->pollEvents();
 
-    if (cueStick.isDrag()) {
+    if (isCueBallDraggable) {
+        sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
+
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            float dx = mousePosition.x - cueBall->getPosition().x;
+            float dy = mousePosition.y - cueBall->getPosition().y;
+            float distanceSquared = dx * dx + dy * dy;
+
+            if (distanceSquared <= ball_radius * ball_radius) {
+                cueBall->setPosition(mousePosition);
+            }
+        }
+    }
+
+    if (cueStick.isDrag() && !isCueBallDraggable) {
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
         cueStick.update(mousePosition);
     }
 
-    // Update each ball's position based on its velocity
     for (Ball* ball : balls) {
         ball->update();
     }
 
-    // Check for collisions between balls and resolve them
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {
             if (balls[i]->checkCollision(*balls[j])) {
@@ -630,21 +695,23 @@ void Game::update() {
         }
     }
 
-    // Check if balls fall into holes
     for (Hole* hole : holes) {
         for (auto it = balls.begin(); it != balls.end();) {
             if (hole->isBallInHole((*it)->getPosition(), ball_radius)) {
                 if (*it == cueBall) {
-                    // Cue ball fell into the hole: respawn it
-                    std::cout << "Cue ball fell into the hole! Respawning..." << std::endl;
-                    cueBall->setVelocity({0, 0});  // Reset its velocity
-                    cueBall->setPosition(ballPositions[ballCount - 1]);  // Respawn to initial position
-                    ++it; // Move to the next ball
+                    std::cout << "Cue ball fell into the hole! Teleporting to initial position." << std::endl;
+                    cueBall->setVelocity({0, 0});
+                    cueBall->setPosition(initialCueBallPosition);
+                    isCueBallDraggable = true;
+                    ++it;
                 } else {
-                    // Other balls fell into the hole: remove them
-                    std::cout << "Ball fell into the hole!" << std::endl;
-                    delete *it;              // Free memory
-                    it = balls.erase(it);    // Remove ball from vector
+                    Ball* ball = *it;
+                    if (dynamic_cast<SolidBall*>(ball)) {
+                        pocketedSolidBalls.push_back(ball);
+                    } else if (dynamic_cast<StripedBall*>(ball)) {
+                        pocketedStripedBalls.push_back(ball);
+                    }
+                    it = balls.erase(it);
                 }
             } else {
                 ++it;
@@ -653,32 +720,38 @@ void Game::update() {
     }
 }
 
+
+
 void Game::render() {
-
-    /*
-        - Clear Old Frame
-        - Render Objects
-        - Display Frame in window
-    */
-
     this->window->clear();
 
-    // Draw Game Objects
     table.draw(*this->window);
 
-    for(Hole* hole : holes) {
+    for (Hole* hole : holes) {
         hole->draw(*this->window);
     }
 
-    for(Ball* ball : balls) {
-        ball->draw(*this->window); // Dereference usage for getting the correct argument type
+    for (Ball* ball : balls) {
+        ball->draw(*this->window);
+    }
+
+    // Render pocketed solid balls
+    for (size_t i = 0; i < pocketedSolidBalls.size(); ++i) {
+        sf::Vector2f position(50 , 50 + i * (2 * ball_radius + 10)); // Top-left alignment
+        pocketedSolidBalls[i]->setPosition(position);
+        pocketedSolidBalls[i]->draw(*this->window);
+    }
+
+    // Render pocketed striped balls
+    for (size_t i = 0; i < pocketedStripedBalls.size(); ++i) {
+        sf::Vector2f position(window_width - 50, 50 + i * (2 * ball_radius + 10)); // Top-right alignment
+        pocketedStripedBalls[i]->setPosition(position);
+        pocketedStripedBalls[i]->draw(*this->window);
     }
 
     cueStick.draw(*this->window);
 
-    
-
     this->window->display();
-
 }
+
 
