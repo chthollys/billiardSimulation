@@ -665,18 +665,35 @@ void Game::update() {
     this->pollEvents();
 
     if (isCueBallDraggable) {
+        isDraggingCueBall = true;
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            float dx = mousePosition.x - cueBall->getPosition().x;
-            float dy = mousePosition.y - cueBall->getPosition().y;
-            float distanceSquared = dx * dx + dy * dy;
+            // Calculate the desired position of the cue ball
+            sf::Vector2f desiredPosition = mousePosition;
 
-            if (distanceSquared <= ball_radius * ball_radius) {
-                cueBall->setPosition(mousePosition);
+            // Check collisions with other balls
+            bool canMove = true;
+            for (Ball* ball : balls) {
+                if (ball != cueBall) {
+                    float distance = std::sqrt(std::pow(ball->getPosition().x - desiredPosition.x, 2) +
+                                            std::pow(ball->getPosition().y - desiredPosition.y, 2));
+                    if (distance <= ball_radius * 2) {
+                        canMove = false;
+                        break; // Stop checking further if a collision is found
+                    }
+                }
             }
+
+            // Move the cue ball only if there are no collisions
+            if (canMove) {
+                cueBall->setPosition(desiredPosition);
+            }
+        } else {
+            isDraggingCueBall = false; // Reset dragging state when the button is released
         }
     }
+
 
     if (cueStick.isDrag() && !isCueBallDraggable) {
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
@@ -689,11 +706,17 @@ void Game::update() {
 
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {
+            // Skip collisions for the cue ball while dragging
+            if (isDraggingCueBall && (balls[i] == cueBall || balls[j] == cueBall)) {
+                continue;
+            }
+
             if (balls[i]->checkCollision(*balls[j])) {
                 balls[i]->resolveCollision(*balls[j]);
             }
         }
     }
+
 
     for (Hole* hole : holes) {
         for (auto it = balls.begin(); it != balls.end();) {

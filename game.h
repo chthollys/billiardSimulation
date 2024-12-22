@@ -257,6 +257,7 @@ private:
     std::vector<Hole*> holes;
    
     bool isCueBallDraggable = false;
+    bool isDraggingCueBall;
     sf::Vector2f initialCueBallPosition;
 
     std::vector<Ball*> pocketedSolidBalls;   // Solid balls that fell into holes
