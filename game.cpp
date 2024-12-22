@@ -583,12 +583,6 @@ Game::Game() {
     this->initHoles();
     std::cout << "Holes initialized." << std::endl;
 
-    currentPlayer = Player::One;
-    playerOneAssigned = false;
-    playerTwoAssigned = false;
-    playerOneIsSolid = true; // Default before assignment
-    blackBallPocketed = false;
-
     std::cout << "Game created successfully." << std::endl;
 }
 
@@ -674,30 +668,15 @@ void Game::update() {
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-            sf::Vector2f desiredPosition = mousePosition;
+            float dx = mousePosition.x - cueBall->getPosition().x;
+            float dy = mousePosition.y - cueBall->getPosition().y;
+            float distanceSquared = dx * dx + dy * dy;
 
-            // Check if cue ball collides with other balls
-            bool canMove = true;
-            for (Ball* ball : balls) {
-                if (ball != cueBall) {
-                    float distance = std::sqrt(
-                        std::pow(ball->getPosition().x - desiredPosition.x, 2) +
-                        std::pow(ball->getPosition().y - desiredPosition.y, 2)
-                    );
-                    if (distance <= 2 * ball_radius) {
-                        canMove = false;
-                        break;
-                    }
-                }
-            }
-
-            // Move the cue ball only if it doesn't collide
-            if (canMove) {
-                cueBall->setPosition(desiredPosition);
+            if (distanceSquared <= ball_radius * ball_radius) {
+                cueBall->setPosition(mousePosition);
             }
         }
     }
-
 
     if (cueStick.isDrag() && !isCueBallDraggable) {
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));

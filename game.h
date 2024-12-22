@@ -237,8 +237,6 @@ class Table : private References {
 
 };
 
-enum class Player { One, Two }; // Player Enum
-
 class Game : private References {
 
 private:
@@ -257,13 +255,7 @@ private:
     std::vector<sf::Vector2f> ballPositions;
     Hole* hole;
     std::vector<Hole*> holes;
-    
-    Player currentPlayer;       // Track current player
-    bool playerOneAssigned;     // Flag for Player One's assignment
-    bool playerTwoAssigned;     // Flag for Player Two's assignment
-    bool playerOneIsSolid;      // True if Player One is assigned solids
-    bool blackBallPocketed;     // Flag for black ball pocketed
-
+   
     bool isCueBallDraggable = false;
     sf::Vector2f initialCueBallPosition;
 
