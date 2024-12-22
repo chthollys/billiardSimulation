@@ -18,7 +18,7 @@ struct SizeRef {
 
     // Table Properties
     const float table_width = 2000.f;
-    const float table_height = 1200.0f;
+    const float table_height = 1000.0f;
     sf::Vector2f table_dimension = sf::Vector2f(table_width, table_height);
 
     // Offset Property
@@ -257,7 +257,7 @@ private:
     std::vector<Hole*> holes;
    
     bool isCueBallDraggable = false;
-    bool isDraggingCueBall;
+    bool isDraggingCueBall = false;
     sf::Vector2f initialCueBallPosition;
 
     std::vector<Ball*> pocketedSolidBalls;   // Solid balls that fell into holes

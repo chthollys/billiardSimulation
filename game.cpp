@@ -663,7 +663,7 @@ void Game::pollEvents() {
 
 void Game::update() {
     this->pollEvents();
-
+    
     if (isCueBallDraggable) {
         isDraggingCueBall = true;
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
