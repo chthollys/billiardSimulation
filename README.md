@@ -7,7 +7,7 @@ This project is a 2D billiards simulation game built using C++ and the Simple an
 The project files are organized as follows:
 
 - **`main.cpp`**: Contains the main game loop that initializes and runs the game.
-- **`game.h`** and **`game.cpp`**: Define the main classes for game mechanics, including `Game`, `Ball`, `CueStick`, and `Table`.
+- **`game.h`** and **`game.cpp`**: Define the main classes for game mechanics, including `Game`, `Ball`, `CueStick`, `Table`, `Hole`, and various utility structs.
 - **`*.dll` Files**: Required SFML dynamic libraries.
 
 ## Key Classes and Components
@@ -19,6 +19,8 @@ The project files are organized as follows:
   - `initVariables()`: Initializes essential variables.
   - `initWindow()`: Creates the game window.
   - `initBalls()`: Generates initial positions and colors of billiard balls.
+  - `initHoles()`: Initializes the positions of the holes on the table.
+  - `initSoundEffects()`: Loads sound effects for ball collisions and cue stick hits.
   - `pollEvents()`: Handles user input and event processing.
   - `update()`: Updates the state of game objects every frame.
   - `render()`: Renders all game objects to the window.
@@ -40,14 +42,21 @@ The project files are organized as follows:
   - `startDragging()`: Initiates the aiming process when the player holds down the left mouse button.
   - `update()`: Adjusts the cue stick's position and rotation based on the mouse position, updating shot power and direction.
   - `stopDragging()`: Releases the cue stick, applying the calculated force to the cue ball.
-  
+
 ### 4. `Table` Class
 
 - **Purpose**: Renders the billiard table, including walls and shadows.
 - **Methods**:
   - `draw()`: Draws the table and its components (walls, shadows, corners) on the screen.
 
-### 5. `References`, `SizeRef`, `ColorRef`, and `SizePositionRef` Structs
+### 5. `Hole` Class
+
+- **Purpose**: Represents the holes on the billiard table where balls can fall in.
+- **Methods**:
+  - `draw()`: Draws the hole on the screen.
+  - `isBallInHole()`: Checks if a ball is within the hole's radius.
+
+### 6. `References`, `SizeRef`, `ColorRef`, and `SizePositionRef` Structs
 
 These structs store game constants, including:
 - **SizeRef**: Stores the dimensions for the window, table, balls, and cue stick.

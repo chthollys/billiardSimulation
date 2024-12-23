@@ -63,6 +63,9 @@ struct SizeRef {
 };
 
 struct ColorRef {
+    // Window Color 
+    sf::Color window_color = sf::Color(46, 80, 119);
+
     // Ball Color Properties
     sf::Color ballBorderColor = sf::Color(255, 255, 255);
     std::vector<sf::Color> ballColors = {
@@ -186,7 +189,8 @@ public:
 
 class CueStick : private References {
 private:
-    sf::RectangleShape stick;
+    sf::Texture stickTexture; // Texture for the cue stick
+    sf::Sprite stickSprite;   // Sprite to draw the cue stick
     sf::Vector2f startPosition;
     sf::Vector2f endPosition;
     bool isDragging = false;
@@ -204,6 +208,7 @@ public:
     float getPower() const;
     sf::Vector2f getDirection(const sf::Vector2f& cueBallPosition) const;
 };
+
 
 class Hole : private References {
 private:
@@ -255,6 +260,11 @@ private:
     std::vector<sf::Vector2f> ballPositions;
     Hole* hole;
     std::vector<Hole*> holes;
+
+    sf::SoundBuffer cueStickHitBuffer;
+    sf::Sound cueStickHitSound;
+    sf::SoundBuffer collisionSoundBuffer; 
+    sf::Sound collisionSound;
    
     bool isCueBallDraggable = false;
     bool isDraggingCueBall = false;
@@ -268,6 +278,7 @@ private:
     void initWindow();
     void initBalls();
     void initHoles();
+    void initSoundEffects();
     void resetBalls();
     bool areBallsMoving() const;
 
