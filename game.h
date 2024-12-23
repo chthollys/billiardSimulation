@@ -260,6 +260,11 @@ private:
     std::vector<sf::Vector2f> ballPositions;
     Hole* hole;
     std::vector<Hole*> holes;
+
+    sf::SoundBuffer cueStickHitBuffer;
+    sf::Sound cueStickHitSound;
+    sf::SoundBuffer collisionSoundBuffer; 
+    sf::Sound collisionSound;
    
     bool isCueBallDraggable = false;
     bool isDraggingCueBall = false;
@@ -273,6 +278,7 @@ private:
     void initWindow();
     void initBalls();
     void initHoles();
+    void initSoundEffects();
     void resetBalls();
     bool areBallsMoving() const;
 

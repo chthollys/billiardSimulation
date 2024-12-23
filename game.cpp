@@ -535,6 +535,18 @@ void Game::initHoles() {
     }
 }
 
+void Game::initSoundEffects() {
+    if (!collisionSoundBuffer.loadFromFile("./sound/ball_collide.wav")) {
+        std::cerr << "Failed to load collision sound!" << std::endl;
+    } 
+    collisionSound.setBuffer(collisionSoundBuffer);
+
+    if (!cueStickHitBuffer.loadFromFile("./sound/pool_ball_hit.wav")) {
+        std::cerr << "Failed to load cue stick hit sound!" << std::endl;
+    }
+    cueStickHitSound.setBuffer(cueStickHitBuffer);
+}
+
 void Game::resetBalls() {
     // Delete existing balls
     for (Ball* ball : balls) {
@@ -571,6 +583,9 @@ Game::Game() {
 
     this->initHoles();
     std::cout << "Holes initialized." << std::endl;
+
+    this->initSoundEffects();
+    std::cout << "Sound effects initialized." << std::endl;
 
     std::cout << "Game created successfully." << std::endl;
 }
@@ -638,6 +653,10 @@ void Game::pollEvents() {
                         float power = cueStick.getPower();
                         cueBall->applyForce(direction * power);
                         cueStick.stopDragging();
+                        
+                        float volume = std::min(100.0f, power); // Cap volume at 100
+                        cueStickHitSound.setVolume(volume);
+                        cueStickHitSound.play();
                     }
                 }
                 break;
@@ -702,6 +721,14 @@ void Game::update() {
 
             if (balls[i]->checkCollision(*balls[j])) {
                 balls[i]->resolveCollision(*balls[j]);
+                // Add collision sound effect
+                float collisionIntensity = std::min(
+                    100.0f, 
+                    static_cast<float>(std::sqrt(std::pow(balls[i]->getVelocity().x, 2) + std::pow(balls[i]->getVelocity().y, 2)) +
+                    std::sqrt(std::pow(balls[j]->getVelocity().x, 2) + std::pow(balls[j]->getVelocity().y, 2)))
+                );
+                collisionSound.setVolume(collisionIntensity); // Volume based on intensity (0 - 100)
+                collisionSound.play();
             }
         }
     }

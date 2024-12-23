@@ -7,7 +7,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "g++ -g $(cygpath -u \"${workspaceFolder}/main.cpp\") $(cygpath -u \"${workspaceFolder}/game.cpp\") -o $(cygpath -u \"${workspaceFolder}/app.exe\") -I $(cygpath -u \"C:/SFML/include\") -L $(cygpath -u \"C:/SFML/lib\") -lsfml-graphics -lsfml-window -lsfml-system"
+        "g++ -g $(cygpath -u \"${workspaceFolder}/main.cpp\") $(cygpath -u \"${workspaceFolder}/game.cpp\") -o $(cygpath -u \"${workspaceFolder}/app.exe\") -I $(cygpath -u \"C:/SFML/include\") -L $(cygpath -u \"C:/SFML/lib\") -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio"
       ],
       "options": {
         "shell": {
