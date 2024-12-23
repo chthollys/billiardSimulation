@@ -18,13 +18,13 @@ struct SizeRef {
 
     // Table Properties
     const float table_width = 2000.f;
-    const float table_height = 1200.0f;
+    const float table_height = 1000.0f;
     sf::Vector2f table_dimension = sf::Vector2f(table_width, table_height);
+
     // Offset Property
     const float table_offsetX = (window_width - table_width) / 2;
     const float table_offsetY = (window_height - table_height) / 2;
     sf::Vector2f table_offset = sf::Vector2f(table_offsetX, table_offsetY);
-
 
     const float table_topBottomWall_width = table_width + 120.0f; // added 120.0f corresponding to the 2 times height
     const float table_topBottomWall_height = 60.0f;
@@ -45,7 +45,7 @@ struct SizeRef {
 
     // Ball Properties
     const int ballCount = 16;
-    const float ball_border_width = 2.0f;
+    const float ball_border_width = 4.0f;
     const float ball_radius = 25.0f;
 
     // CueStick Properties
@@ -57,9 +57,9 @@ struct SizeRef {
     // Pyhsics Properties
     const float force_scaling_factor = 5.0f;
     const float phi = 3.14159f;
-    const float friction = 0.98f;
+    const float friction = 0.985f;
     const float minVelocityThreshold = 0.05f;
-    const float restitution = 0.95f; // Coefficient of restitution (1.0 = elastic, 0.0 = inelastic)
+    const float restitution = 0.97f; // Coefficient of restitution (1.0 = elastic, 0.0 = inelastic)
 };
 
 struct ColorRef {
@@ -140,13 +140,14 @@ struct References : public SizePositionRef, public ColorRef {
 
 /* ------------------------------------------------------------------------------------------ */
 
-class Ball : private References {
+class Ball : public References {
 private:
     // Private Variables
+
+public:
     sf::CircleShape shape;
     sf::Vector2f velocity;
 
-public:
     // Constructor
     Ball(sf::Vector2f position, sf::Color color);
 
@@ -160,9 +161,28 @@ public:
     // Getter Functions
     sf::Vector2f getPosition() const;
     sf::Vector2f getVelocity() const;
-    
+
+    // Setter Functions
+    void setPosition(sf::Vector2f position);
+    void setVelocity(sf::Vector2f velocity);
+
+    virtual ~Ball() {};
 };
 
+class SolidBall : public Ball {
+public:
+    SolidBall(sf::Vector2f position, sf::Color color);
+};
+
+class StripedBall : public Ball {
+public:
+    StripedBall(sf::Vector2f position, sf::Color color);
+};
+
+class BlackBall : public Ball {
+public:
+    BlackBall(sf::Vector2f position, sf::Color color);
+};
 
 class CueStick : private References {
 private:
@@ -226,7 +246,8 @@ private:
     sf::VideoMode videoMode;
 
     // Game Objects
-    Ball* ball;
+    SolidBall* solidBall;
+    StripedBall* stripedBall;
     Ball* cueBall;
     std::vector<Ball*> balls;
     CueStick cueStick;
@@ -235,6 +256,12 @@ private:
     Hole* hole;
     std::vector<Hole*> holes;
    
+    bool isCueBallDraggable = false;
+    bool isDraggingCueBall = false;
+    sf::Vector2f initialCueBallPosition;
+
+    std::vector<Ball*> pocketedSolidBalls;   // Solid balls that fell into holes
+    std::vector<Ball*> pocketedStripedBalls; // Striped balls that fell into holes
 
     // Private Functions
     void initVariables();
