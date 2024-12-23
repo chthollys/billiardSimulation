@@ -261,6 +261,14 @@ private:
     Hole* hole;
     std::vector<Hole*> holes;
 
+    int playerTurn;
+    int playerScores[2];
+    bool isCueBallPocketed;
+
+    sf::Font font;
+    sf::Text scoreText;
+    sf::Text turnText;
+
     sf::SoundBuffer cueStickHitBuffer;
     sf::Sound cueStickHitSound;
     sf::SoundBuffer collisionSoundBuffer; 
@@ -279,7 +287,9 @@ private:
     void initBalls();
     void initHoles();
     void initSoundEffects();
+    void initFontText();
     void resetBalls();
+    void updateUI();
     bool areBallsMoving() const;
 
 public:
