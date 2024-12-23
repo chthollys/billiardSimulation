@@ -238,8 +238,11 @@ BlackBall::BlackBall(sf::Vector2f position, sf::Color color) : Ball(position, co
 /* === CueStick Class Definition STARTS HERE === */
 
 CueStick::CueStick() : power(0.0f) {
-    stick.setSize(sf::Vector2f(stick_length, stick_width)); // Length and thickness of the stick
-    stick.setFillColor(sf::Color::White);
+    if (!stickTexture.loadFromFile("./img/cue_stick.png")) {
+        std::cerr << "Failed to load cue stick texture!" << std::endl;
+    }
+    stickSprite.setTexture(stickTexture);
+    stickSprite.setOrigin(0, stickTexture.getSize().y / 2);
 }
 
 void CueStick::startDragging(const sf::Vector2f& cueBallPosition) {
@@ -256,42 +259,27 @@ void CueStick::update(const sf::Vector2f& mousePosition) {
     if (isDragging) {
         endPosition = mousePosition;
 
-        // Calculate direction vector from cue ball to mouse position
         sf::Vector2f direction = endPosition - startPosition;
         float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-        // Normalize direction vector to ensure unit length
         if (length != 0) {
             direction /= length;
         }
 
-        // Calculate a dynamic offset based on drag distance, clamped between min and max
         float offsetDistance = std::min(maxOffsetDistance, minOffsetDistance + length / 2.0f);
-
-        // Position the cue stick with the calculated offset distance from the cue ball
         sf::Vector2f stickPosition = startPosition + direction * offsetDistance;
-        stick.setPosition(stickPosition);
+        stickSprite.setPosition(stickPosition);
+        stickSprite.setRotation(std::atan2(direction.y, direction.x) * 180.0f / phi);
 
-        // Set rotation to make the cue stick point toward the mouse position
-        stick.setRotation(std::atan2(direction.y, direction.x) * 180.0f / phi);
-
-        // Calculate power based on drag distance
         power = std::min(100.0f, length / force_scaling_factor);
-
-        // // Debugging output
-        // std::cout << "Offset Distance: " << offsetDistance << std::endl;
-        // std::cout << "Stick Position: (" << stickPosition.x << ", " << stickPosition.y << ")" << std::endl;
-        // std::cout << "Power: " << power << std::endl;
     }
 }
 
 void CueStick::draw(sf::RenderWindow& window) {
     if (isDragging) {
-        window.draw(stick);
+        window.draw(stickSprite);
     }
 }
-
-// Getter Functions 
 
 bool CueStick::isDrag() const {
     return isDragging;
@@ -305,10 +293,11 @@ sf::Vector2f CueStick::getDirection(const sf::Vector2f& cueBallPosition) const {
     sf::Vector2f direction = cueBallPosition - endPosition;
     float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
     if (length == 0.0f) {
-        return sf::Vector2f(0, 0); // Avoid division by zero
+        return sf::Vector2f(0, 0);
     }
     return direction / length;
 }
+
 
 
 /* === Hole Class Definitions === */
@@ -746,7 +735,7 @@ void Game::update() {
 
 
 void Game::render() {
-    this->window->clear();
+    this->window->clear(window_color);
 
     table.draw(*this->window);
 
