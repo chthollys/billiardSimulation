@@ -237,6 +237,14 @@ private:
     Hole* hole;
     std::vector<Hole*> holes;
     sf::Vector2f initialCueBallPosition;
+
+    int playerTurn;
+    int playerScores[2];
+    bool isCueBallPocketed;
+
+    sf::Font font;
+    sf::Text scoreText;
+    sf::Text turnText;
    
 
     // Private Functions
@@ -244,6 +252,7 @@ private:
     void initWindow();
     void initBalls();
     void initHoles();
+    void updateUI();
     void resetBalls();
     bool areBallsMoving() const;
 

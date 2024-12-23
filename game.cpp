@@ -436,6 +436,10 @@ sf::Vector2f Table::getDimension() {
 void Game::initVariables() {
     this->window = nullptr;
     initialCueBallPosition = sf::Vector2f(0.f, 0.f); // Inisialisasi default
+    playerTurn = 1;
+    playerScores[0] = 0;
+    playerScores[1] = 0;
+    isCueBallPocketed = false;
 }
 
 void Game::initWindow() {
@@ -453,6 +457,22 @@ void Game::initWindow() {
     this->window->setFramerateLimit(frLimit);
 }
 
+void Game::updateUI() {
+    // Update teks skor
+    scoreText.setString(
+        "Player 1: " + std::to_string(playerScores[0]) + 
+        "  Player 2: " + std::to_string(playerScores[1])
+    );
+    scoreText.setCharacterSize(40);  // Ukuran font yang lebih besar
+    scoreText.setFillColor(sf::Color::White);  // Warna putih
+    scoreText.setPosition(window_width / 2 - scoreText.getLocalBounds().width / 2, 10.f);  // Tengah horizontal
+
+    // Update teks giliran pemain
+    turnText.setString("Turn: Player " + std::to_string(playerTurn));
+    turnText.setCharacterSize(40);  // Ukuran font yang lebih besar
+    turnText.setFillColor(sf::Color::White);  // Warna putih
+    turnText.setPosition(window_width / 2 - turnText.getLocalBounds().width / 2, 50.f);  // Tengah horizontal
+}
 
 void Game::initBalls() {
     std::cout << "Starting ball initialization..." << std::endl;
@@ -544,6 +564,18 @@ Game::Game() {
     this->initHoles();
     std::cout << "Holes initialized." << std::endl;
 
+    if (!font.loadFromFile("Arial.ttf")) {
+        std::cerr << "Failed to load font!" << std::endl;
+    }
+
+    scoreText.setFont(font);
+    scoreText.setCharacterSize(30);
+    scoreText.setFillColor(sf::Color::White);
+
+    turnText.setFont(font);
+    turnText.setCharacterSize(30);
+    turnText.setFillColor(sf::Color::White);
+
     std::cout << "Game created successfully." << std::endl;
 }
 
@@ -608,13 +640,21 @@ void Ball::setVelocity(const sf::Vector2f& velocity) {
 void Game::update() {
     this->pollEvents();
 
+    bool ballPocketed = false;      // Indikator apakah ada bola masuk ke lubang
+    bool cueBallPocketed = false;  // Indikator apakah bola putih masuk ke lubang
+    static bool playerScored = false;     // Indikator apakah pemain mendapatkan poin
+    static bool allBallsStopped = true;  // Status bola berhenti, default true untuk awal permainan
+
+    // Cek apakah cue stick sedang digunakan
     if (cueStick.isDrag()) {
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
         cueStick.update(mousePosition);
     }
 
+    // Perbarui posisi semua bola
     for (Ball* ball : balls) ball->update();
 
+    // Memeriksa tabrakan antar bola
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {
             if (balls[i]->checkCollision(*balls[j])) {
@@ -623,22 +663,59 @@ void Game::update() {
         }
     }
 
+    // Memeriksa bola yang masuk ke dalam lubang
     for (size_t i = 0; i < balls.size(); ++i) {
         for (Hole* hole : holes) {
             if (hole->isBallInHole(balls[i]->getPosition(), ball_radius)) {
+                ballPocketed = true;  // Indikator bahwa bola masuk
+
                 if (balls[i] == cueBall) {
+                    // Bola putih masuk
+                    cueBallPocketed = true;
                     cueBall->setPosition(initialCueBallPosition);
                     cueBall->setVelocity(sf::Vector2f(0.f, 0.f));
                 } else {
+                    // Bola warna masuk
+                    playerScores[playerTurn - 1] += 1;  // Tambahkan skor ke pemain aktif
+                    playerScored = true;  // Tandai bahwa pemain mendapat poin
                     delete balls[i];
                     balls.erase(balls.begin() + i);
                     --i;
-                    break;
+                    break;  // Keluar dari loop karena bola ini sudah dihapus
                 }
             }
         }
     }
+
+    // Periksa apakah semua bola sudah berhenti
+    bool currentBallsStopped = !areBallsMoving();
+
+    if (currentBallsStopped && !allBallsStopped) {
+        if (cueBallPocketed) {
+            // Penalti jika bola putih masuk
+            cueBallPocketed = false;  // Reset indikator
+            playerTurn = (playerTurn % 2) + 1;  // Ganti giliran pemain
+        } else if (!playerScored) {
+            // Ganti giliran pemain hanya jika tidak mendapatkan poin
+            playerTurn = (playerTurn % 2) + 1;
+            
+        } else {
+            // Pemain mencetak poin, giliran tidak berubah
+        }
+
+        // Reset indikator playerScored hanya setelah giliran diproses
+        playerScored = false;
+    }
+
+    allBallsStopped = currentBallsStopped;  // Update status berhenti bola
+
+    this->updateUI();  // Perbarui tampilan UI
 }
+
+
+
+
+
 void Game::render() {
 
     /*
@@ -662,7 +739,8 @@ void Game::render() {
 
     cueStick.draw(*this->window);
 
-    
+    this->window->draw(scoreText);
+    this->window->draw(turnText);
 
     this->window->display();
 
