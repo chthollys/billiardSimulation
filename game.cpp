@@ -152,29 +152,84 @@ void Ball::resolveCollision(Ball& other) {
     other.velocity = v2nVector + v2tVector;
 }
 
+bool Ball::checkCollisionWithTrapezium(const sf::ConvexShape& trapezium) const {
+    for (size_t i = 0; i < trapezium.getPointCount(); ++i) {
+        // Get the edges of the trapezium
+        sf::Vector2f p1 = trapezium.getTransform().transformPoint(trapezium.getPoint(i));
+        sf::Vector2f p2 = trapezium.getTransform().transformPoint(trapezium.getPoint((i + 1) % trapezium.getPointCount()));
 
-void Ball::update() {
+        // Calculate the closest point on the edge to the ball
+        sf::Vector2f edge = p2 - p1;
+        float edgeLengthSquared = edge.x * edge.x + edge.y * edge.y;
+        sf::Vector2f ballToEdgeStart = shape.getPosition() - p1;
+
+        float t = std::max(0.0f, std::min(1.0f, (ballToEdgeStart.x * edge.x + ballToEdgeStart.y * edge.y) / edgeLengthSquared));
+        sf::Vector2f closestPoint = p1 + t * edge;
+
+        // Check if the ball intersects the edge
+        sf::Vector2f ballToClosest = shape.getPosition() - closestPoint;
+        if (std::sqrt(ballToClosest.x * ballToClosest.x + ballToClosest.y * ballToClosest.y) <= ball_radius) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Ball::resolveCollisionWithTrapezium(const sf::ConvexShape& trapezium) {
+    for (size_t i = 0; i < trapezium.getPointCount(); ++i) {
+        sf::Vector2f p1 = trapezium.getTransform().transformPoint(trapezium.getPoint(i));
+        sf::Vector2f p2 = trapezium.getTransform().transformPoint(trapezium.getPoint((i + 1) % trapezium.getPointCount()));
+
+        sf::Vector2f edge = p2 - p1;
+        float edgeLengthSquared = edge.x * edge.x + edge.y * edge.y;
+        sf::Vector2f ballToEdgeStart = shape.getPosition() - p1;
+
+        float t = std::max(0.0f, std::min(1.0f, (ballToEdgeStart.x * edge.x + ballToEdgeStart.y * edge.y) / edgeLengthSquared));
+        sf::Vector2f closestPoint = p1 + t * edge;
+
+        sf::Vector2f ballToClosest = shape.getPosition() - closestPoint;
+        float distance = std::sqrt(ballToClosest.x * ballToClosest.x + ballToClosest.y * ballToClosest.y);
+
+        if (distance <= ball_radius) {
+            // Calculate the normal vector
+            sf::Vector2f normal = ballToClosest / distance;
+
+            // Reflect the velocity based on the normal
+            velocity -= 2.0f * (velocity.x * normal.x + velocity.y * normal.y) * normal;
+
+            // Apply restitution
+            velocity *= restitution;
+
+            // Adjust position to prevent overlap
+            shape.move(normal * (ball_radius - distance));
+            break;
+        }
+    }
+}
+
+
+void Ball::update(const Table& table) {
     // Move the ball by its current velocity
     shape.move(velocity);
 
-    // Correct wall collision for x-axis
-    if (shape.getPosition().x - ball_radius <= table_offsetX) {
-        shape.setPosition(table_offsetX + ball_radius, shape.getPosition().y);
-        velocity.x = -velocity.x * restitution; // Reverse x-direction with restitution
+    // Check collisions with trapezium-shaped walls
+    if (checkCollisionWithTrapezium(table.topLeftSecWall)) {
+        resolveCollisionWithTrapezium(table.topLeftSecWall);
     }
-    else if (shape.getPosition().x + ball_radius >= window_width - table_offsetX) {
-        shape.setPosition(window_width - table_offsetX - ball_radius, shape.getPosition().y);
-        velocity.x = -velocity.x * restitution; // Reverse x-direction with restitution
+    if (checkCollisionWithTrapezium(table.topRightSecWall)) {
+        resolveCollisionWithTrapezium(table.topRightSecWall);
     }
-
-    // Correct wall collision for y-axis
-    if (shape.getPosition().y - ball_radius <= table_offsetY) {
-        shape.setPosition(shape.getPosition().x, table_offsetY + ball_radius);
-        velocity.y = -velocity.y * restitution; // Reverse y-direction with restitution
+    if (checkCollisionWithTrapezium(table.bottomLeftSecWall)) {
+        resolveCollisionWithTrapezium(table.bottomLeftSecWall);
     }
-    else if (shape.getPosition().y + ball_radius >= window_height - table_offsetY) {
-        shape.setPosition(shape.getPosition().x, window_height - table_offsetY - ball_radius);
-        velocity.y = -velocity.y * restitution; // Reverse y-direction with restitution
+    if (checkCollisionWithTrapezium(table.bottomRightSecWall)) {
+        resolveCollisionWithTrapezium(table.bottomRightSecWall);
+    }
+    if (checkCollisionWithTrapezium(table.leftSecWall)) {
+        resolveCollisionWithTrapezium(table.leftSecWall);
+    }
+    if (checkCollisionWithTrapezium(table.rightSecWall)) {
+        resolveCollisionWithTrapezium(table.rightSecWall);
     }
 
     // Apply friction to gradually slow down the ball
@@ -184,6 +239,8 @@ void Ball::update() {
     if (std::abs(velocity.x) < minVelocityThreshold) velocity.x = 0.0f;
     if (std::abs(velocity.y) < minVelocityThreshold) velocity.y = 0.0f;
 }
+
+
 
 
 
@@ -783,8 +840,9 @@ void Game::update() {
     }
 
     for (Ball* ball : balls) {
-        ball->update();
+        ball->update(table); // Pass the Table object
     }
+
 
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {

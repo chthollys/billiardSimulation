@@ -142,6 +142,27 @@ struct References : public SizePositionRef, public ColorRef {
 }; 
 
 /* ------------------------------------------------------------------------------------------ */
+class Table : private References {
+    private:
+        sf::RectangleShape table;
+        sf::RectangleShape topWall, bottomWall, leftWall, rightWall;
+        sf::RectangleShape topWallShadow, bottomWallShadow, leftWallShadow, rightWallShadow;
+        sf::CircleShape topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner;
+
+    public:
+        sf::ConvexShape topLeftSecWall, topRightSecWall, bottomLeftSecWall, bottomRightSecWall, leftSecWall, rightSecWall;
+
+        // Constructor
+        Table();
+
+        // Functions
+        void draw(sf::RenderWindow& window);
+
+        // Getter Functions
+        sf::Vector2f getPosition();
+        sf::Vector2f getDimension();
+
+};
 
 class Ball : public References {
 private:
@@ -159,7 +180,11 @@ public:
     void applyForce(const sf::Vector2f& force);
     bool checkCollision(const Ball& other) const;
     void resolveCollision(Ball& other);
-    void update();
+    bool checkCollisionWithTrapezium(const sf::ConvexShape& trapezium) const;
+    void resolveCollisionWithTrapezium(const sf::ConvexShape& trapezium);
+
+    void update(const Table& table); // Pass Table by reference
+
 
     // Getter Functions
     sf::Vector2f getPosition() const;
@@ -222,26 +247,6 @@ public:
     sf::Vector2f getPosition() const;
 };
 
-class Table : private References {
-    private:
-        sf::RectangleShape table;
-        sf::RectangleShape topWall, bottomWall, leftWall, rightWall;
-        sf::RectangleShape topWallShadow, bottomWallShadow, leftWallShadow, rightWallShadow;
-        sf::ConvexShape topLeftSecWall, topRightSecWall, bottomLeftSecWall, bottomRightSecWall, leftSecWall, rightSecWall;
-        sf::CircleShape topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner;
-
-    public:
-        // Constructor
-        Table();
-
-        // Functions
-        void draw(sf::RenderWindow& window);
-
-        // Getter Functions
-        sf::Vector2f getPosition();
-        sf::Vector2f getDimension();
-
-};
 
 class Game : private References {
 
