@@ -16,14 +16,15 @@ The project files are organized as follows:
 
 - **Purpose**: Acts as the main engine, managing the game loop, event handling, updating objects, and rendering graphics.
 - **Methods**:
-  - `initVariables()`: Initializes essential variables.
-  - `initWindow()`: Creates the game window.
-  - `initBalls()`: Generates initial positions and colors of billiard balls.
+  - `initVariables()`: Initializes essential variables, including player scores and turn.
+  - `initWindow()`: Creates the game window with specified dimensions and frame rate limit.
+  - `initBalls()`: Generates initial positions and colors of billiard balls, including cue, solid, striped, and black balls.
   - `initHoles()`: Initializes the positions of the holes on the table.
   - `initSoundEffects()`: Loads sound effects for ball collisions and cue stick hits.
-  - `pollEvents()`: Handles user input and event processing.
-  - `update()`: Updates the state of game objects every frame.
-  - `render()`: Renders all game objects to the window.
+  - `initFontText()`: Sets up the font and text for displaying scores and turns.
+  - `pollEvents()`: Handles user input and event processing, including mouse interactions with the cue ball and cue stick.
+  - `update()`: Updates the state of game objects every frame, including ball movements, collisions, and scoring.
+  - `render()`: Renders all game objects to the window, including balls, holes, and UI elements.
   - `areBallsMoving()`: Checks if any ball is still in motion.
 
 ### 2. `Ball` Class
@@ -33,6 +34,8 @@ The project files are organized as follows:
   - `applyForce()`: Applies force to a ball, setting it in motion.
   - `checkCollision()`: Checks for collisions with other balls.
   - `resolveCollision()`: Handles collision response with another ball, applying physics calculations to adjust velocity based on normal and tangential components.
+  - `checkCollisionWithTrapezium()`: Checks for collisions with trapezium-shaped table walls.
+  - `resolveCollisionWithTrapezium()`: Resolves collisions with trapezium-shaped table walls.
   - `update()`: Updates position based on velocity, applies friction, and checks for wall collisions.
 
 ### 3. `CueStick` Class
@@ -42,6 +45,7 @@ The project files are organized as follows:
   - `startDragging()`: Initiates the aiming process when the player holds down the left mouse button.
   - `update()`: Adjusts the cue stick's position and rotation based on the mouse position, updating shot power and direction.
   - `stopDragging()`: Releases the cue stick, applying the calculated force to the cue ball.
+  - `draw()`: Renders the cue stick on the screen.
 
 ### 4. `Table` Class
 
@@ -91,3 +95,4 @@ $ bash -c 'g++ -g $(cygpath -u "path_to_workspaceFolder\main.cpp") $(cygpath -u 
 - **CueStick Mechanics**: Enhanced cue stick control with better feedback and power scaling.
 - **UI Improvements**: Updated score and turn display for better clarity.
 - **Sound Effects**: Added sound effects for ball collisions and cue stick hits to enhance the gaming experience.
+- **Trapezium Wall Collision**: Added logic handle for ball to wall collision to enhance the pyshics game works.
