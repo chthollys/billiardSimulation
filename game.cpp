@@ -412,26 +412,7 @@ void Table::draw(sf::RenderWindow& window) {
     window.draw(topRightCorner);
     window.draw(bottomLeftCorner);
     window.draw(bottomRightCorner);
-
-    // Debug Table Component Positions
-    // displayPosition("table", table.getPosition());
-    // displayPosition("topWallShadow", topWallShadow.getPosition());
-    // displayPosition("bottomWallShadow", bottomWallShadow.getPosition());
-    // displayPosition("leftWallShadow", leftWallShadow.getPosition());
-    // displayPosition("rightWallShadow", rightWallShadow.getPosition());
-    // displayPosition("topWall", topWall.getPosition());
-    // displayPosition("bottomWall", bottomWall.getPosition());
-    // displayPosition("leftWall", leftWall.getPosition());
-    // displayPosition("rightWall", rightWall.getPosition());
-    // displayPosition("topRightCorner", topRightCorner.getPosition());
-    // displayPosition("topLeftCorner", topLeftCorner.getPosition());
-    // displayPosition("bottomLeftCorner", bottomLeftCorner.getPosition());
-    // displayPosition("bottomRightCorner", bottomRightCorner.getPosition());
-
-    // displayPosition("rightWallShadow", rightWallShadow.getPosition());
-    // std::cout << "Origin : (" << rightWallShadow.getOrigin().x << ", " << rightWallShadow.getOrigin().y << ")" << std::endl;
 }
-
 
 // Getter Functions
 
