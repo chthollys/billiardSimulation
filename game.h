@@ -26,12 +26,12 @@ struct SizeRef {
     const float table_offsetY = (window_height - table_height) / 2;
     sf::Vector2f table_offset = sf::Vector2f(table_offsetX, table_offsetY);
 
-    const float table_topBottomWall_width = table_width + 120.0f; // added 120.0f corresponding to the 2 times height
-    const float table_topBottomWall_height = 60.0f;
+    const float table_topBottomWall_width = table_width + 80.0f; // added 120.0f corresponding to the 2 times height
+    const float table_topBottomWall_height = 40.0f;
     const float table_topBottomWallShadow_width = table_topBottomWall_width;
     const float table_topBottomWallShadow_height = table_topBottomWall_height;
 
-    const float table_leftRightWall_width = 60.0f;
+    const float table_leftRightWall_width = 40.0f;
     const float table_leftRightWall_height = table_height;
     const float table_leftRightWallShadow_width = table_leftRightWall_width;
     const float table_leftRightWallShadow_height = table_leftRightWall_height;
@@ -41,7 +41,7 @@ struct SizeRef {
 
     // Hole Properties
     const int holeCount = 6;
-    const float hole_radius = 50.0f;
+    const float hole_radius = 40.0f;
 
     // Ball Properties
     const int ballCount = 16;
@@ -91,7 +91,7 @@ struct ColorRef {
     sf::Color tableColor = sf::Color(0, 204, 0); // Bright green
     sf::Color tableWallColor= sf::Color(139, 69, 19); // Dark wood color
     sf::Color tableShadowColor = sf::Color(105, 58, 26);
-
+    sf::Color tableSecWallColor = sf::Color(86, 86, 86);
     // Hole Color Properties
     sf::Color holeColor = sf::Color(0, 0, 0);
 };
@@ -227,6 +227,7 @@ class Table : private References {
         sf::RectangleShape table;
         sf::RectangleShape topWall, bottomWall, leftWall, rightWall;
         sf::RectangleShape topWallShadow, bottomWallShadow, leftWallShadow, rightWallShadow;
+        sf::ConvexShape topLeftSecWall, topRightSecWall, bottomLeftSecWall, bottomRightSecWall, leftSecWall, rightSecWall;
         sf::CircleShape topLeftCorner, topRightCorner, bottomLeftCorner, bottomRightCorner;
 
     public:

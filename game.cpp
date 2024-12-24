@@ -342,7 +342,21 @@ Table::Table() {
     topWallShadow.setOrigin(sf::Vector2f(table_topBottomWallShadow_width / 2, table_topBottomWallShadow_height / 2));
     topWallShadow.setPosition(table_topWallShadow);
     topWallShadow.setFillColor(tableShadowColor);
-    
+
+    topLeftSecWall.setPointCount(4); 
+    topLeftSecWall.setPoint(0, sf::Vector2f(hole_topLeft.x + hole_radius, hole_topLeft.y)); 
+    topLeftSecWall.setPoint(1, sf::Vector2f(hole_topMid.x - hole_radius, hole_topLeft.y)); 
+    topLeftSecWall.setPoint(2, sf::Vector2f(hole_topMid.x - 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius));
+    topLeftSecWall.setPoint(3, sf::Vector2f(hole_topLeft.x + 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius));
+    topLeftSecWall.setFillColor(tableSecWallColor);
+
+    topRightSecWall.setPointCount(4);
+    topRightSecWall.setPoint(0, sf::Vector2f(hole_topMid.x + hole_radius, hole_topLeft.y));
+    topRightSecWall.setPoint(1, sf::Vector2f(hole_topRight.x - hole_radius, hole_topLeft.y)); 
+    topRightSecWall.setPoint(3, sf::Vector2f(hole_topMid.x + 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius));
+    topRightSecWall.setPoint(2, sf::Vector2f(hole_topRight.x - 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius)); 
+    topRightSecWall.setFillColor(tableSecWallColor);
+
     bottomWall.setSize(sf::Vector2f(table_topBottomWall_width, table_topBottomWall_height));
     bottomWall.setOrigin(sf::Vector2f(table_topBottomWall_width / 2, table_topBottomWall_height / 2));
     bottomWall.setFillColor(tableWallColor);    
@@ -351,6 +365,20 @@ Table::Table() {
     bottomWallShadow.setOrigin(sf::Vector2f(table_topBottomWallShadow_width / 2, table_topBottomWallShadow_height / 2));
     bottomWallShadow.setPosition(table_bottomWallShadow);
     bottomWallShadow.setFillColor(tableShadowColor);
+
+    bottomLeftSecWall.setPointCount(4); 
+    bottomLeftSecWall.setPoint(0, sf::Vector2f(hole_bottomLeft.x + hole_radius, hole_bottomLeft.y));
+    bottomLeftSecWall.setPoint(1, sf::Vector2f(hole_bottomMid.x - hole_radius, hole_bottomLeft.y));
+    bottomLeftSecWall.setPoint(2, sf::Vector2f(hole_bottomMid.x - 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius)); 
+    bottomLeftSecWall.setPoint(3, sf::Vector2f(hole_bottomLeft.x + 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius)); 
+    bottomLeftSecWall.setFillColor(tableSecWallColor);
+
+    bottomRightSecWall.setPointCount(4);
+    bottomRightSecWall.setPoint(0, sf::Vector2f(hole_bottomMid.x + hole_radius, hole_bottomLeft.y)); 
+    bottomRightSecWall.setPoint(1, sf::Vector2f(hole_bottomRight.x - hole_radius, hole_bottomLeft.y)); 
+    bottomRightSecWall.setPoint(3, sf::Vector2f(hole_bottomMid.x + 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius));
+    bottomRightSecWall.setPoint(2, sf::Vector2f(hole_bottomRight.x - 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius));
+    bottomRightSecWall.setFillColor(tableSecWallColor);
 
     leftWall.setSize(sf::Vector2f(table_leftRightWall_width, table_leftRightWall_height));
     leftWall.setOrigin(sf::Vector2f(table_leftRightWall_width / 2, table_leftRightWall_height / 2));
@@ -361,6 +389,13 @@ Table::Table() {
     leftWallShadow.setPosition(table_leftWallShadow);
     leftWallShadow.setFillColor(tableShadowColor);
 
+    leftSecWall.setPointCount(4); 
+    leftSecWall.setPoint(0, sf::Vector2f(hole_topLeft.x, hole_topLeft.y + hole_radius)); 
+    leftSecWall.setPoint(1, sf::Vector2f(hole_bottomLeft.x, hole_bottomLeft.y - ball_radius));
+    leftSecWall.setPoint(2, sf::Vector2f(hole_bottomLeft.x + 0.5 * hole_radius, hole_bottomLeft.y - 1.5 * hole_radius)); 
+    leftSecWall.setPoint(3, sf::Vector2f(hole_topLeft.x + 0.5 * hole_radius, hole_topLeft.y + 1.5 * hole_radius));
+    leftSecWall.setFillColor(tableSecWallColor);
+
     rightWall.setSize(sf::Vector2f(table_leftRightWall_width, table_leftRightWall_height));
     rightWall.setOrigin(sf::Vector2f(table_leftRightWall_width / 2, table_leftRightWall_height / 2));
     rightWall.setFillColor(tableWallColor);
@@ -369,6 +404,13 @@ Table::Table() {
     rightWallShadow.setOrigin(sf::Vector2f(table_leftRightWallShadow_width / 2, table_leftRightWallShadow_height / 2));
     rightWallShadow.setPosition(table_rightWallShadow);
     rightWallShadow.setFillColor(tableShadowColor);
+
+    rightSecWall.setPointCount(4); 
+    rightSecWall.setPoint(0, sf::Vector2f(hole_topRight.x, hole_topRight.y + hole_radius)); 
+    rightSecWall.setPoint(1, sf::Vector2f(hole_bottomRight.x, hole_bottomRight.y - ball_radius));
+    rightSecWall.setPoint(2, sf::Vector2f(hole_bottomRight.x - 0.5 * hole_radius, hole_bottomRight.y - 1.5 * hole_radius)); 
+    rightSecWall.setPoint(3, sf::Vector2f(hole_topRight.x - 0.5 * hole_radius, hole_topRight.y + 1.5 * hole_radius));
+    rightSecWall.setFillColor(tableSecWallColor);
 
     // Wall Corner
     topLeftCorner.setRadius(cornerRadius);
@@ -412,6 +454,13 @@ void Table::draw(sf::RenderWindow& window) {
     window.draw(topRightCorner);
     window.draw(bottomLeftCorner);
     window.draw(bottomRightCorner);
+
+    window.draw(topLeftSecWall);
+    window.draw(topRightSecWall);
+    window.draw(bottomLeftSecWall);
+    window.draw(bottomRightSecWall);
+    window.draw(leftSecWall);
+    window.draw(rightSecWall);
 }
 
 // Getter Functions
