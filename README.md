@@ -81,5 +81,13 @@ The billiards simulation uses basic physics concepts:
 
 To compile the project, use the following command, adjusting the paths to SFML libraries if needed:
 
-```Git bash
+```bash
 $ bash -c 'g++ -g $(cygpath -u "path_to_workspaceFolder\main.cpp") $(cygpath -u "path_to_workspaceFolder\game.cpp") -o $(cygpath -u "path_to_workspaceFolder\app.exe") -I $(cygpath -u "path_to_sfml/include") -L $(cygpath -u "path_to_sfml/lib") -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio'
+```
+
+## Recent Updates
+
+- **Ball Class Enhancements**: Improved collision detection and response with more accurate physics calculations.
+- **CueStick Mechanics**: Enhanced cue stick control with better feedback and power scaling.
+- **UI Improvements**: Updated score and turn display for better clarity.
+- **Sound Effects**: Added sound effects for ball collisions and cue stick hits to enhance the gaming experience.
