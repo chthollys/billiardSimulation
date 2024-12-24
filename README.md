@@ -83,3 +83,11 @@ To compile the project, use the following command, adjusting the paths to SFML l
 
 ```bash
 g++ main.cpp game.cpp -o app -I"path_to_sfml/include" -L"path_to_sfml/lib" -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+```
+
+## Recent Updates
+
+- **Ball Class Enhancements**: Improved collision detection and response with more accurate physics calculations.
+- **CueStick Mechanics**: Enhanced cue stick control with better feedback and power scaling.
+- **UI Improvements**: Updated score and turn display for better clarity.
+- **Sound Effects**: Added sound effects for ball collisions and cue stick hits to enhance the gaming experience.
