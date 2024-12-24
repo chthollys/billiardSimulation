@@ -91,3 +91,4 @@ g++ main.cpp game.cpp -o app -I"path_to_sfml/include" -L"path_to_sfml/lib" -lsfm
 - **CueStick Mechanics**: Enhanced cue stick control with better feedback and power scaling.
 - **UI Improvements**: Updated score and turn display for better clarity.
 - **Sound Effects**: Added sound effects for ball collisions and cue stick hits to enhance the gaming experience.
+- **Trapezium Wall Collision**: Added logic handle for ball to wall collision to enhance the pyshics game works.

@@ -152,29 +152,84 @@ void Ball::resolveCollision(Ball& other) {
     other.velocity = v2nVector + v2tVector;
 }
 
+bool Ball::checkCollisionWithTrapezium(const sf::ConvexShape& trapezium) const {
+    for (size_t i = 0; i < trapezium.getPointCount(); ++i) {
+        // Get the edges of the trapezium
+        sf::Vector2f p1 = trapezium.getTransform().transformPoint(trapezium.getPoint(i));
+        sf::Vector2f p2 = trapezium.getTransform().transformPoint(trapezium.getPoint((i + 1) % trapezium.getPointCount()));
 
-void Ball::update() {
+        // Calculate the closest point on the edge to the ball
+        sf::Vector2f edge = p2 - p1;
+        float edgeLengthSquared = edge.x * edge.x + edge.y * edge.y;
+        sf::Vector2f ballToEdgeStart = shape.getPosition() - p1;
+
+        float t = std::max(0.0f, std::min(1.0f, (ballToEdgeStart.x * edge.x + ballToEdgeStart.y * edge.y) / edgeLengthSquared));
+        sf::Vector2f closestPoint = p1 + t * edge;
+
+        // Check if the ball intersects the edge
+        sf::Vector2f ballToClosest = shape.getPosition() - closestPoint;
+        if (std::sqrt(ballToClosest.x * ballToClosest.x + ballToClosest.y * ballToClosest.y) <= ball_radius) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Ball::resolveCollisionWithTrapezium(const sf::ConvexShape& trapezium) {
+    for (size_t i = 0; i < trapezium.getPointCount(); ++i) {
+        sf::Vector2f p1 = trapezium.getTransform().transformPoint(trapezium.getPoint(i));
+        sf::Vector2f p2 = trapezium.getTransform().transformPoint(trapezium.getPoint((i + 1) % trapezium.getPointCount()));
+
+        sf::Vector2f edge = p2 - p1;
+        float edgeLengthSquared = edge.x * edge.x + edge.y * edge.y;
+        sf::Vector2f ballToEdgeStart = shape.getPosition() - p1;
+
+        float t = std::max(0.0f, std::min(1.0f, (ballToEdgeStart.x * edge.x + ballToEdgeStart.y * edge.y) / edgeLengthSquared));
+        sf::Vector2f closestPoint = p1 + t * edge;
+
+        sf::Vector2f ballToClosest = shape.getPosition() - closestPoint;
+        float distance = std::sqrt(ballToClosest.x * ballToClosest.x + ballToClosest.y * ballToClosest.y);
+
+        if (distance <= ball_radius) {
+            // Calculate the normal vector
+            sf::Vector2f normal = ballToClosest / distance;
+
+            // Reflect the velocity based on the normal
+            velocity -= 2.0f * (velocity.x * normal.x + velocity.y * normal.y) * normal;
+
+            // Apply restitution
+            velocity *= restitution;
+
+            // Adjust position to prevent overlap
+            shape.move(normal * (ball_radius - distance));
+            break;
+        }
+    }
+}
+
+
+void Ball::update(const Table& table) {
     // Move the ball by its current velocity
     shape.move(velocity);
 
-    // Correct wall collision for x-axis
-    if (shape.getPosition().x - ball_radius <= table_offsetX) {
-        shape.setPosition(table_offsetX + ball_radius, shape.getPosition().y);
-        velocity.x = -velocity.x * restitution; // Reverse x-direction with restitution
+    // Check collisions with trapezium-shaped walls
+    if (checkCollisionWithTrapezium(table.topLeftSecWall)) {
+        resolveCollisionWithTrapezium(table.topLeftSecWall);
     }
-    else if (shape.getPosition().x + ball_radius >= window_width - table_offsetX) {
-        shape.setPosition(window_width - table_offsetX - ball_radius, shape.getPosition().y);
-        velocity.x = -velocity.x * restitution; // Reverse x-direction with restitution
+    if (checkCollisionWithTrapezium(table.topRightSecWall)) {
+        resolveCollisionWithTrapezium(table.topRightSecWall);
     }
-
-    // Correct wall collision for y-axis
-    if (shape.getPosition().y - ball_radius <= table_offsetY) {
-        shape.setPosition(shape.getPosition().x, table_offsetY + ball_radius);
-        velocity.y = -velocity.y * restitution; // Reverse y-direction with restitution
+    if (checkCollisionWithTrapezium(table.bottomLeftSecWall)) {
+        resolveCollisionWithTrapezium(table.bottomLeftSecWall);
     }
-    else if (shape.getPosition().y + ball_radius >= window_height - table_offsetY) {
-        shape.setPosition(shape.getPosition().x, window_height - table_offsetY - ball_radius);
-        velocity.y = -velocity.y * restitution; // Reverse y-direction with restitution
+    if (checkCollisionWithTrapezium(table.bottomRightSecWall)) {
+        resolveCollisionWithTrapezium(table.bottomRightSecWall);
+    }
+    if (checkCollisionWithTrapezium(table.leftSecWall)) {
+        resolveCollisionWithTrapezium(table.leftSecWall);
+    }
+    if (checkCollisionWithTrapezium(table.rightSecWall)) {
+        resolveCollisionWithTrapezium(table.rightSecWall);
     }
 
     // Apply friction to gradually slow down the ball
@@ -184,6 +239,8 @@ void Ball::update() {
     if (std::abs(velocity.x) < minVelocityThreshold) velocity.x = 0.0f;
     if (std::abs(velocity.y) < minVelocityThreshold) velocity.y = 0.0f;
 }
+
+
 
 
 
@@ -342,7 +399,21 @@ Table::Table() {
     topWallShadow.setOrigin(sf::Vector2f(table_topBottomWallShadow_width / 2, table_topBottomWallShadow_height / 2));
     topWallShadow.setPosition(table_topWallShadow);
     topWallShadow.setFillColor(tableShadowColor);
-    
+
+    topLeftSecWall.setPointCount(4); 
+    topLeftSecWall.setPoint(0, sf::Vector2f(hole_topLeft.x + hole_radius, hole_topLeft.y)); 
+    topLeftSecWall.setPoint(1, sf::Vector2f(hole_topMid.x - hole_radius, hole_topLeft.y)); 
+    topLeftSecWall.setPoint(2, sf::Vector2f(hole_topMid.x - 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius));
+    topLeftSecWall.setPoint(3, sf::Vector2f(hole_topLeft.x + 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius));
+    topLeftSecWall.setFillColor(tableSecWallColor);
+
+    topRightSecWall.setPointCount(4);
+    topRightSecWall.setPoint(0, sf::Vector2f(hole_topMid.x + hole_radius, hole_topLeft.y));
+    topRightSecWall.setPoint(1, sf::Vector2f(hole_topRight.x - hole_radius, hole_topLeft.y)); 
+    topRightSecWall.setPoint(3, sf::Vector2f(hole_topMid.x + 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius));
+    topRightSecWall.setPoint(2, sf::Vector2f(hole_topRight.x - 1.5 * hole_radius, hole_topLeft.y + 0.5 * hole_radius)); 
+    topRightSecWall.setFillColor(tableSecWallColor);
+
     bottomWall.setSize(sf::Vector2f(table_topBottomWall_width, table_topBottomWall_height));
     bottomWall.setOrigin(sf::Vector2f(table_topBottomWall_width / 2, table_topBottomWall_height / 2));
     bottomWall.setFillColor(tableWallColor);    
@@ -351,6 +422,20 @@ Table::Table() {
     bottomWallShadow.setOrigin(sf::Vector2f(table_topBottomWallShadow_width / 2, table_topBottomWallShadow_height / 2));
     bottomWallShadow.setPosition(table_bottomWallShadow);
     bottomWallShadow.setFillColor(tableShadowColor);
+
+    bottomLeftSecWall.setPointCount(4); 
+    bottomLeftSecWall.setPoint(0, sf::Vector2f(hole_bottomLeft.x + hole_radius, hole_bottomLeft.y));
+    bottomLeftSecWall.setPoint(1, sf::Vector2f(hole_bottomMid.x - hole_radius, hole_bottomLeft.y));
+    bottomLeftSecWall.setPoint(2, sf::Vector2f(hole_bottomMid.x - 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius)); 
+    bottomLeftSecWall.setPoint(3, sf::Vector2f(hole_bottomLeft.x + 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius)); 
+    bottomLeftSecWall.setFillColor(tableSecWallColor);
+
+    bottomRightSecWall.setPointCount(4);
+    bottomRightSecWall.setPoint(0, sf::Vector2f(hole_bottomMid.x + hole_radius, hole_bottomLeft.y)); 
+    bottomRightSecWall.setPoint(1, sf::Vector2f(hole_bottomRight.x - hole_radius, hole_bottomLeft.y)); 
+    bottomRightSecWall.setPoint(3, sf::Vector2f(hole_bottomMid.x + 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius));
+    bottomRightSecWall.setPoint(2, sf::Vector2f(hole_bottomRight.x - 1.5 * hole_radius, hole_bottomLeft.y - 0.5 * hole_radius));
+    bottomRightSecWall.setFillColor(tableSecWallColor);
 
     leftWall.setSize(sf::Vector2f(table_leftRightWall_width, table_leftRightWall_height));
     leftWall.setOrigin(sf::Vector2f(table_leftRightWall_width / 2, table_leftRightWall_height / 2));
@@ -361,6 +446,13 @@ Table::Table() {
     leftWallShadow.setPosition(table_leftWallShadow);
     leftWallShadow.setFillColor(tableShadowColor);
 
+    leftSecWall.setPointCount(4); 
+    leftSecWall.setPoint(0, sf::Vector2f(hole_topLeft.x, hole_topLeft.y + hole_radius)); 
+    leftSecWall.setPoint(1, sf::Vector2f(hole_bottomLeft.x, hole_bottomLeft.y - ball_radius));
+    leftSecWall.setPoint(2, sf::Vector2f(hole_bottomLeft.x + 0.5 * hole_radius, hole_bottomLeft.y - 1.5 * hole_radius)); 
+    leftSecWall.setPoint(3, sf::Vector2f(hole_topLeft.x + 0.5 * hole_radius, hole_topLeft.y + 1.5 * hole_radius));
+    leftSecWall.setFillColor(tableSecWallColor);
+
     rightWall.setSize(sf::Vector2f(table_leftRightWall_width, table_leftRightWall_height));
     rightWall.setOrigin(sf::Vector2f(table_leftRightWall_width / 2, table_leftRightWall_height / 2));
     rightWall.setFillColor(tableWallColor);
@@ -369,6 +461,13 @@ Table::Table() {
     rightWallShadow.setOrigin(sf::Vector2f(table_leftRightWallShadow_width / 2, table_leftRightWallShadow_height / 2));
     rightWallShadow.setPosition(table_rightWallShadow);
     rightWallShadow.setFillColor(tableShadowColor);
+
+    rightSecWall.setPointCount(4); 
+    rightSecWall.setPoint(0, sf::Vector2f(hole_topRight.x, hole_topRight.y + hole_radius)); 
+    rightSecWall.setPoint(1, sf::Vector2f(hole_bottomRight.x, hole_bottomRight.y - ball_radius));
+    rightSecWall.setPoint(2, sf::Vector2f(hole_bottomRight.x - 0.5 * hole_radius, hole_bottomRight.y - 1.5 * hole_radius)); 
+    rightSecWall.setPoint(3, sf::Vector2f(hole_topRight.x - 0.5 * hole_radius, hole_topRight.y + 1.5 * hole_radius));
+    rightSecWall.setFillColor(tableSecWallColor);
 
     // Wall Corner
     topLeftCorner.setRadius(cornerRadius);
@@ -413,25 +512,13 @@ void Table::draw(sf::RenderWindow& window) {
     window.draw(bottomLeftCorner);
     window.draw(bottomRightCorner);
 
-    // Debug Table Component Positions
-    // displayPosition("table", table.getPosition());
-    // displayPosition("topWallShadow", topWallShadow.getPosition());
-    // displayPosition("bottomWallShadow", bottomWallShadow.getPosition());
-    // displayPosition("leftWallShadow", leftWallShadow.getPosition());
-    // displayPosition("rightWallShadow", rightWallShadow.getPosition());
-    // displayPosition("topWall", topWall.getPosition());
-    // displayPosition("bottomWall", bottomWall.getPosition());
-    // displayPosition("leftWall", leftWall.getPosition());
-    // displayPosition("rightWall", rightWall.getPosition());
-    // displayPosition("topRightCorner", topRightCorner.getPosition());
-    // displayPosition("topLeftCorner", topLeftCorner.getPosition());
-    // displayPosition("bottomLeftCorner", bottomLeftCorner.getPosition());
-    // displayPosition("bottomRightCorner", bottomRightCorner.getPosition());
-
-    // displayPosition("rightWallShadow", rightWallShadow.getPosition());
-    // std::cout << "Origin : (" << rightWallShadow.getOrigin().x << ", " << rightWallShadow.getOrigin().y << ")" << std::endl;
+    window.draw(topLeftSecWall);
+    window.draw(topRightSecWall);
+    window.draw(bottomLeftSecWall);
+    window.draw(bottomRightSecWall);
+    window.draw(leftSecWall);
+    window.draw(rightSecWall);
 }
-
 
 // Getter Functions
 
@@ -453,6 +540,11 @@ sf::Vector2f Table::getDimension() {
 // Private Functions
 void Game::initVariables() {
     this->window = nullptr;
+    this->playerTurn = 1; // Set playerTurn to Player 1 by default
+    this->playerScores[0] = 0; // Player 1 score
+    this->playerScores[1] = 0; // Player 2 score
+    this->isCueBallPocketed = false; // Initialize to prevent undefined behavior
+
     std::cout << "variable initialized" << std::endl;
 }
 
@@ -547,6 +639,20 @@ void Game::initSoundEffects() {
     cueStickHitSound.setBuffer(cueStickHitBuffer);
 }
 
+void Game::initFontText() {
+    if (!font.loadFromFile("Arial.ttf")) {
+        std::cerr << "Failed to load font!" << std::endl;
+    }
+
+    scoreText.setFont(font);
+    scoreText.setCharacterSize(30);
+    scoreText.setFillColor(sf::Color::White);
+
+    turnText.setFont(font);
+    turnText.setCharacterSize(30);
+    turnText.setFillColor(sf::Color::White);
+}
+
 void Game::resetBalls() {
     // Delete existing balls
     for (Ball* ball : balls) {
@@ -556,6 +662,23 @@ void Game::resetBalls() {
 
     // Reinitialize balls as needed
     this->initBalls();
+}
+
+void Game::updateUI() {
+    // Update teks skor
+    scoreText.setString(
+        "Player 1: " + std::to_string(playerScores[0]) + 
+        "  Player 2: " + std::to_string(playerScores[1])
+    );
+    scoreText.setCharacterSize(40);  // Ukuran font yang lebih besar
+    scoreText.setFillColor(sf::Color::White);  // Warna putih
+    scoreText.setPosition(window_width / 2 - scoreText.getLocalBounds().width / 2, 10.f);  // Tengah horizontal
+
+    // Update teks giliran pemain
+    turnText.setString("Turn: Player " + std::to_string(playerTurn));
+    turnText.setCharacterSize(40);  // Ukuran font yang lebih besar
+    turnText.setFillColor(sf::Color::White);  // Warna putih
+    turnText.setPosition(window_width / 2 - turnText.getLocalBounds().width / 2, 50.f);  // Tengah horizontal
 }
 
 bool Game::areBallsMoving() const {
@@ -583,6 +706,9 @@ Game::Game() {
 
     this->initHoles();
     std::cout << "Holes initialized." << std::endl;
+
+    this->initFontText();
+    std::cout << "Font Text UI initialized." << std::endl;
 
     this->initSoundEffects();
     std::cout << "Sound effects initialized." << std::endl;
@@ -672,6 +798,11 @@ void Game::pollEvents() {
 void Game::update() {
     this->pollEvents();
     
+    bool ballPocketed = false;      // Indikator apakah ada bola masuk ke lubang
+    bool cueBallPocketed = false;  // Indikator apakah bola putih masuk ke lubang
+    static bool playerScored = false;     // Indikator apakah pemain mendapatkan poin
+    static bool allBallsStopped = true;  // Status bola berhenti, default true untuk awal permainan
+
     if (isCueBallDraggable) {
         isDraggingCueBall = true;
         sf::Vector2f mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*this->window));
@@ -709,8 +840,9 @@ void Game::update() {
     }
 
     for (Ball* ball : balls) {
-        ball->update();
+        ball->update(table); // Pass the Table object
     }
+
 
     for (size_t i = 0; i < balls.size(); ++i) {
         for (size_t j = i + 1; j < balls.size(); ++j) {
@@ -733,17 +865,19 @@ void Game::update() {
         }
     }
 
-
     for (Hole* hole : holes) {
         for (auto it = balls.begin(); it != balls.end();) {
             if (hole->isBallInHole((*it)->getPosition(), ball_radius)) {
                 if (*it == cueBall) {
+                    cueBallPocketed = true;
                     std::cout << "Cue ball fell into the hole! Teleporting to initial position." << std::endl;
                     cueBall->setVelocity({0, 0});
                     cueBall->setPosition(initialCueBallPosition);
                     isCueBallDraggable = true;
                     ++it;
                 } else {
+                    playerScores[playerTurn - 1] += 1;  // Tambahkan skor ke pemain aktif
+                    playerScored = true;  // Tandai bahwa pemain mendapat poin
                     Ball* ball = *it;
                     if (dynamic_cast<SolidBall*>(ball)) {
                         pocketedSolidBalls.push_back(ball);
@@ -757,6 +891,30 @@ void Game::update() {
             }
         }
     }
+
+    // Periksa apakah semua bola sudah berhenti
+    bool currentBallsStopped = !areBallsMoving();
+
+    if (currentBallsStopped && !allBallsStopped) {
+        if (cueBallPocketed) {
+            // Penalti jika bola putih masuk
+            cueBallPocketed = false;  // Reset indikator
+            playerTurn = (playerTurn % 2) + 1;  // Ganti giliran pemain
+        } else if (!playerScored) {
+            // Ganti giliran pemain hanya jika tidak mendapatkan poin
+            playerTurn = (playerTurn % 2) + 1;
+            
+        } else {
+            // Pemain mencetak poin, giliran tidak berubah
+        }
+
+        // Reset indikator playerScored hanya setelah giliran diproses
+        playerScored = false;
+    }
+
+    allBallsStopped = currentBallsStopped;  // Update status berhenti bola
+
+    this->updateUI();  // Perbarui tampilan UI
 }
 
 
@@ -789,6 +947,9 @@ void Game::render() {
     }
 
     cueStick.draw(*this->window);
+
+    this->window->draw(scoreText);
+    this->window->draw(turnText);
 
     this->window->display();
 }
